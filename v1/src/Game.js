@@ -1,8 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import useScript from './hooks/useScript.js';
 import socketIOClient from "socket.io-client";
+import Compositor from './Compositor.js';
 
-const gameUtils = require("./modules/utils.js");
+const layerManager = require('./modules/layers.js');
+const gameLogic = require("./modules/main.js");
+const assetManager = require("./modules/assets.js");
+const physics = require("./modules/physics.js")
 
 //SERVER URL
 const ENDPOINT = "http://127.0.0.1:4001";
@@ -43,47 +47,105 @@ function Game() {
         fetch('res/levels/0/0.txt')
         .then(async(r) => {
             setTestLevel(await r.json());
-
         });
     }
 
     //Adjust game window size
     const scaleWindow = () => {
-        const A = document.documentElement.clientWidth/baseWidth;
-        const B = document.documentElement.clientHeight/baseHeight;
-        const SCALE = Math.min(A,B);
-        setGScale(SCALE);
-        setGWidth(baseWidth*SCALE);
-        setGHeight(baseHeight*SCALE);
+        var scaler = document.documentElement.clientHeight/18;
+        scaler = Math.max(24, scaler);
+        setGScale(scaler/64);
+        setGWidth(document.documentElement.clientWidth);
+        setGHeight(document.documentElement.clientHeight);
     }
 
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
-        context.resetTransform();
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = "#24b4ed";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        //Scale game window to fit
-        context.scale(gScale,gScale);
 
-        gameUtils.loadImage('/res/levels/0/0.png')
-        .then(image => {
-            const sprites = new gameUtils.SpriteSheet(image, 64, 64);
-            for (let i = 0; i < testLevel.layers.length; i++){
-                const tiles = testLevel.layers[i].positions;
-                for(let j = 0; j < tiles.length; j++){
-                    sprites.drawTile(tiles[j].id,context,tiles[j].x,tiles[j].y);
+        const loadSprites = assetManager.loadLevelAssets(0);
+        const loadMap = assetManager.loadLevelData(0);
+        const loadPlayer = assetManager.loadPlayer(0);
+
+        Promise.all([loadSprites,loadMap,loadPlayer])
+            .then(([sprites, level, player]) => {
+                const comp = new Compositor();
+
+                const mapLayer = layerManager.createBG(level.layers, sprites, gWidth, gHeight);
+                comp.layers.push(mapLayer);
+
+                var lastTime;
+
+                const char = new Entity();
+                char.pos.set(100,500);
+                char.vel.set(100,-800);
+
+                char.update = function updateChar(delta) {
+                    this.pos.x += this.vel.x*delta
+                    this.pos.y += this.vel.y*delta;
+                    this.vel.y += physics.gravity*delta;
                 }
-            }
-        })
+
+                const charLayer = layerManager.createCharLayer(player, char.pos);
+                comp.layers.push(charLayer);
+
+                const update = (time) => {
+                    if (lastTime == undefined)
+                        lastTime = time;
+                    const delta = time - lastTime;
+                    const deltaFactor = delta/1000;
+
+                    lastTime = time;
+
+                    char.update(deltaFactor);
+
+                    requestAnimationFrame(update);
+                }
+
+                const render = (time) => {
+                    if (lastTime == undefined)
+                        lastTime = time;
+
+                    const delta = time - lastTime;
+                    const deltaFactor = delta/1000;
+
+                    context.scale(gScale, gScale);
+                    context.clearRect(0, 0, gWidth, gHeight);
+
+                    comp.draw(context);
+                    requestAnimationFrame(render);
+                    context.resetTransform();
+                }
+
+                requestAnimationFrame(update);
+                requestAnimationFrame(render);
+            })
     });
 
     return (
         <>
-        <canvas ref={canvasRef} width={gWidth} height={gHeight}/>
+            <canvas ref={canvasRef} width={gWidth} height={gHeight}/>
         </>
     )
+}
+
+class Entity {
+    constructor() {
+        this.pos = new Vec2(0,0);
+        this.vel = new Vec2(0,0);
+    }
+}
+
+class Vec2 {
+    constructor(x,y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    set(x, y){
+        this.x = x;
+        this.y = y;
+    }
 }
 
 export default Game;
