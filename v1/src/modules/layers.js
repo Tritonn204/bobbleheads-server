@@ -4,26 +4,16 @@ const drawLayer = (layer, context, sprites) => {
     });
 }
 
-export function createBG(layers, sprites, gWidth, gHeight) {
-    const buffer = document.createElement('canvas');
-    buffer.width = gWidth;
-    buffer.height = gHeight;
-
-    buffer.getContext('2d').clearRect(0, 0, buffer.width, buffer.height);
-    buffer.getContext('2d').fillStyle = "#24b4ed";
-    buffer.getContext('2d').fillRect(0, 0, buffer.width, buffer.height);
-
-    layers.forEach((item, i) => {
-        drawLayer(item, buffer.getContext('2d'), sprites);
-    });
-
+export function createBG(layers, sprites) {
     return function drawMap(context) {
-        context.drawImage(buffer, 0, 0);
+        layers.forEach((item, i) => {
+            drawLayer(item, context, sprites);
+        });
     }
 }
 
-export function createCharLayer(sprite, pos) {
+export function createCharLayer(entity) {
     return function drawSpriteLayer(context) {
-        sprite.draw('idle',context,pos.x, pos.y);
+        entity.draw(context);
     }
 }

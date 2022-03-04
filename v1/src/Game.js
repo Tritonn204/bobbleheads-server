@@ -3,10 +3,15 @@ import useScript from './hooks/useScript.js';
 import socketIOClient from "socket.io-client";
 import Compositor from './Compositor.js';
 
+import { Entity } from './modules/entity.js';
+import { createChar } from './modules/entities.js';
+
+import { GameLoop } from './modules/main.js';
+import { Keyboard } from './modules/input.js'
+
 const layerManager = require('./modules/layers.js');
-const gameLogic = require("./modules/main.js");
 const assetManager = require("./modules/assets.js");
-const physics = require("./modules/physics.js")
+const physics = require("./modules/physics.js");
 
 //SERVER URL
 const ENDPOINT = "http://127.0.0.1:4001";
@@ -27,21 +32,38 @@ function Game() {
     const [testLevel, setTestLevel] = useState();
 
     useEffect(() => {
-        try {
-            socketRef.current = socketIOClient(ENDPOINT);
-        }catch(e){
-            //console.log(e);
-        }
-        loadLevel();
-        scaleWindow();
-        window.addEventListener('resize', scaleWindow);
+        const connect = () => {
+            try {
+                socketRef.current = socketIOClient(ENDPOINT);
+            }catch(e){
+                //console.log(e);
+            }
 
-        //Cleanup
-        return () => {
-            if (socketRef)
-            socketRef.current.disconnect();
+            //Cleanup
+            return () => {
+                if (socketRef)
+                socketRef.current.disconnect();
+            }
         }
+        //connect();
     }, []);
+
+    useEffect(() => {
+        const initialize = () => {
+            loadLevel();
+            scaleWindow();
+
+            //Add event listeners
+            addListeners();
+        }
+        initialize();
+    }, [])
+
+    const addListeners = () => {
+        window.addEventListener('resize', e => {
+            scaleWindow();
+        });
+    }
 
     const loadLevel = async () => {
         fetch('res/levels/0/0.txt')
@@ -67,85 +89,52 @@ function Game() {
         const loadMap = assetManager.loadLevelData(0);
         const loadPlayer = assetManager.loadPlayer(0);
 
-        Promise.all([loadSprites,loadMap,loadPlayer])
-            .then(([sprites, level, player]) => {
+        Promise.all([loadSprites,loadMap,createChar(0)])
+            .then(([sprites, level, char]) => {
                 const comp = new Compositor();
 
                 const mapLayer = layerManager.createBG(level.layers, sprites, gWidth, gHeight);
                 comp.layers.push(mapLayer);
 
-                var lastTime;
+                //Set position and velocity of the player object in testing
+                char.pos.set(500,800);
+                char.vel.set(100,-1200);
 
-                const char = new Entity();
-                char.pos.set(100,500);
-                char.vel.set(100,-800);
+                const input = new Keyboard();
+                input.addMapping(input.SPACE, keyState => {
+                    if (keyState) {
+                        char.jump.start();
+                    } else {
+                        char.jump.cancel();
+                    }
+                });
 
-                char.update = function updateChar(delta) {
-                    this.pos.x += this.vel.x*delta
-                    this.pos.y += this.vel.y*delta;
-                    this.vel.y += physics.gravity*delta;
-                }
+                input.listenTo(window);
 
-                const charLayer = layerManager.createCharLayer(player, char.pos);
+                //Create sprite/draw layer for the player
+                const charLayer = layerManager.createCharLayer(char);
                 comp.layers.push(charLayer);
 
-                const update = (time) => {
-                    if (lastTime == undefined)
-                        lastTime = time;
-                    const delta = time - lastTime;
-                    const deltaFactor = delta/1000;
-
-                    lastTime = time;
-
-                    char.update(deltaFactor);
-
-                    requestAnimationFrame(update);
+                //Initialize gameloop with logic/physics updating at a specified framerate
+                const gameLoop = new GameLoop(1/60);
+                //define update logic
+                gameLoop.update = function update(delta) {
+                    char.update(delta);
                 }
-
-                const render = (time) => {
-                    if (lastTime == undefined)
-                        lastTime = time;
-
-                    const delta = time - lastTime;
-                    const deltaFactor = delta/1000;
-
-                    context.scale(gScale, gScale);
-                    context.clearRect(0, 0, gWidth, gHeight);
-
+                //define render logic, which happens after update
+                gameLoop.render = function render() {
                     comp.draw(context);
-                    requestAnimationFrame(render);
-                    context.resetTransform();
                 }
 
-                requestAnimationFrame(update);
-                requestAnimationFrame(render);
+                gameLoop.start();
             })
     });
 
     return (
         <>
-            <canvas ref={canvasRef} width={gWidth} height={gHeight}/>
+            <canvas ref={canvasRef} width={1000} height={1400}/>
         </>
     )
-}
-
-class Entity {
-    constructor() {
-        this.pos = new Vec2(0,0);
-        this.vel = new Vec2(0,0);
-    }
-}
-
-class Vec2 {
-    constructor(x,y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    set(x, y){
-        this.x = x;
-        this.y = y;
-    }
 }
 
 export default Game;
