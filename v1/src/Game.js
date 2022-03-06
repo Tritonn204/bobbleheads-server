@@ -3,15 +3,16 @@ import useScript from './hooks/useScript.js';
 import socketIOClient from "socket.io-client";
 import Compositor from './Compositor.js';
 
-import { Entity } from './modules/entity.js';
+import { Stage, Sprite } from '@inlet/react-pixi'
+
 import { createChar } from './modules/entities.js';
 
-import { GameLoop } from './modules/main.js';
-import { Keyboard } from './modules/input.js'
+import { Keyboard, KeyCodes } from './modules/input.js';
+import { bindKeys } from './modules/controls.js';
 
-const layerManager = require('./modules/layers.js');
-const assetManager = require("./modules/assets.js");
 const physics = require("./modules/physics.js");
+const assetManager = require("./modules/assets.js");
+const layerManager = require("./modules/layers.js");
 
 //SERVER URL
 const ENDPOINT = "http://127.0.0.1:4001";
@@ -31,44 +32,35 @@ function Game() {
     const [gHeight, setGHeight] = useState();
     const [testLevel, setTestLevel] = useState();
 
+    const [level, setLevel] = useState();
+    const [comp, setComp] = useState();
+    const [clock, setClock] = useState(0);
+
+    let gameLoop = useRef();
+
+    //Establishes connection with the server
+    // useEffect(() => {
+    //         try {
+    //             //socketRef.current = socketIOClient(ENDPOINT);
+    //         }catch(e){
+    //             //console.log(e);
+    //         }
+    //         //Cleanup on dismount
+    //         return () => {
+    //             //if (socketRef)
+    //             //socketRef.current.disconnect();
+    //         }
+    // }, []);
+
+    //Sizes game window on page load, and enables dynamic resizing
     useEffect(() => {
-        const connect = () => {
-            try {
-                socketRef.current = socketIOClient(ENDPOINT);
-            }catch(e){
-                //console.log(e);
-            }
-
-            //Cleanup
-            return () => {
-                if (socketRef)
-                socketRef.current.disconnect();
-            }
-        }
-        //connect();
-    }, []);
-
-    useEffect(() => {
-        const initialize = () => {
-            loadLevel();
-            scaleWindow();
-
-            //Add event listeners
-            addListeners();
-        }
-        initialize();
+        scaleWindow();
+        addListeners();
     }, [])
 
     const addListeners = () => {
         window.addEventListener('resize', e => {
             scaleWindow();
-        });
-    }
-
-    const loadLevel = async () => {
-        fetch('res/levels/0/0.txt')
-        .then(async(r) => {
-            setTestLevel(await r.json());
         });
     }
 
@@ -81,59 +73,64 @@ function Game() {
         setGHeight(document.documentElement.clientHeight);
     }
 
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const context = canvas.getContext("2d");
 
-        const loadSprites = assetManager.loadLevelAssets(0);
-        const loadMap = assetManager.loadLevelData(0);
+
+    //Initializes game on page load, after fetching required data from the server
+    useEffect(() => {
+
+        const loadMap = assetManager.loadLevel(0);
         const loadPlayer = assetManager.loadPlayer(0);
 
-        Promise.all([loadSprites,loadMap,createChar(0)])
-            .then(([sprites, level, char]) => {
-                const comp = new Compositor();
+        Promise.all([loadMap,createChar(0)])
+            .then(([map, char]) => {
 
-                const mapLayer = layerManager.createBG(level.layers, sprites, gWidth, gHeight);
-                comp.layers.push(mapLayer);
-
-                //Set position and velocity of the player object in testing
-                char.pos.set(500,800);
-                char.vel.set(100,-1200);
-
+                //Loads keyboard handling logic
                 const input = new Keyboard();
-                input.addMapping(input.SPACE, keyState => {
-                    if (keyState) {
-                        char.jump.start();
-                    } else {
-                        char.jump.cancel();
+                let lastTime = 0;
+                let accumulatedTime = 0;
+                let delta = 1/60;
+
+                //Defines keybinds
+                bindKeys(char,input,window);
+
+                map.entities.add(char);
+                setLevel(map);
+
+                //Define the game loop update/render logic
+                const update = (time) => {
+                    setLevel(map);
+                    setClock(Math.random());
+                    //Compares real elapsed time with desired logic/physics framerate to maintain consistency
+                    //accumulatedTime marks how many seconds have passed since the last logic update
+                    accumulatedTime += (time - lastTime)/1000;
+                    lastTime = time;
+
+                    while (accumulatedTime > delta) {
+                        map.update(delta);
+                        accumulatedTime -= delta;
                     }
-                });
-
-                input.listenTo(window);
-
-                //Create sprite/draw layer for the player
-                const charLayer = layerManager.createCharLayer(char);
-                comp.layers.push(charLayer);
-
-                //Initialize gameloop with logic/physics updating at a specified framerate
-                const gameLoop = new GameLoop(1/60);
-                //define update logic
-                gameLoop.update = function update(delta) {
-                    char.update(delta);
-                }
-                //define render logic, which happens after update
-                gameLoop.render = function render() {
-                    comp.draw(context);
+                    gameLoop.current = requestAnimationFrame(update);
                 }
 
-                gameLoop.start();
+                gameLoop.current = requestAnimationFrame(update);
             })
-    });
+    }, []);
+
+    const render = () => {
+        if (level)
+        {
+            return (
+                <>
+                    {level.comp.draw()}
+                </>
+            )
+        }
+    }
 
     return (
-        <>
-            <canvas ref={canvasRef} width={1000} height={1400}/>
-        </>
+        <Stage width={gWidth} height={gHeight}>
+            {render()}
+        </Stage>
     )
 }
 

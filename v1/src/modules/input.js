@@ -1,7 +1,6 @@
+//Key state constants
 const PRESSED = 1;
 const RELEASED = 0;
-
-const SPACE = 32;
 
 export class Keyboard {
     constructor() {

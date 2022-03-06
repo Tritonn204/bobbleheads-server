@@ -1,19 +1,44 @@
-const drawLayer = (layer, context, sprites) => {
-    layer.positions.forEach((item, i) => {
-        sprites.drawTile(item.id,context,item.x,item.y);
-    });
-}
+import { Sprite } from '@inlet/react-pixi';
+import { drawTile } from "./tileutil.js";
 
-export function createBG(layers, sprites) {
-    return function drawMap(context) {
-        layers.forEach((item, i) => {
-            drawLayer(item, context, sprites);
-        });
+export const createBG = (level) => {
+    if (level.tileSet){
+        return (
+            <>
+            {level.tiles.grid.map((column, x) => (
+                column.map((tileId, y) => {
+                    if (level.bgTiles.get(x,y)){
+                        return(
+                        <>
+                            {drawTile(level.bgTiles.get(x,y),level.tileSet,x,y)}
+                            {drawTile(tileId,level.tileSet,x,y)}
+                        </>);
+                    } else {
+                        return(
+                            <>
+                            {drawTile(tileId,level.tileSet,x,y)}
+                            </>
+                            );
+                        }
+                        }
+                    )
+                )
+            )}
+            </>
+        )
     }
 }
 
-export function createCharLayer(entity) {
-    return function drawSpriteLayer(context) {
-        entity.draw(context);
-    }
+
+export const createCharLayer = (entities) => {
+    return (
+        <>
+        {Array.from(entities).map(entity => (
+            <>
+            {entity.draw()}
+            </>
+            )
+        )}
+        </>
+    )
 }

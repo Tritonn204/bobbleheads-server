@@ -1,3 +1,6 @@
+import { Rectangle, Texture } from 'pixi.js';
+
+
 class SpriteSheet {
     constructor(image, width, height) {
         this.image = image;
@@ -8,49 +11,19 @@ class SpriteSheet {
 
     define(name, x, y) {
         const buffer = document.createElement('canvas');
-        buffer.width = this.width;
-        buffer.height = this.height;
-        buffer
-        .getContext("2d")
-        .drawImage(
-            this.image,
-            x*this.width,
-            y*this.height,
-            this.width,
-            this.height,
-            0,
-            0,
-            this.width,
-            this.height
-        );
-        this.tiles.set(name, buffer);
+        const baseTex = Texture.from(this.image);
+        this.tiles.set(name, new Texture(baseTex, new Rectangle(x, y, this.width, this.height)));
     }
 
-    draw(name, context, x, y) {
-        const buffer = this.tiles.get(name);
-        context.drawImage(buffer,x,y);
-    }
+    getTileTexture(index){
+        const xLength = this.image.width/this.width;
 
-    drawTile(index, context, x, y) {
-        const xLength = this.image.width/this.width - 1;
-        const yLength = this.image.height/this.height - 1;
+        let X = (index % xLength) * this.width;
+        let Y = Math.floor(index/xLength) * this.height;
 
-        let X = index;
-        let Y = 0;
+        const baseTex = Texture.from(this.image);
 
-        if (index > xLength){
-            X = index - (xLength%index) - 1;
-            Y = Math.floor(index/xLength);
-        }
-
-        const buffer = document.createElement('canvas');
-        buffer.width = this.width;
-        buffer.height = this.height;
-        buffer
-        .getContext("2d")
-        .drawImage(this.image, X * this.width, Y * this.height, this.width, this.height, 0, 0, this.width, this.height);
-
-        context.drawImage(buffer,x*this.width,y*this.height);
+        return new Texture(baseTex, new Rectangle(X, Y, this.width, this.height));
     }
 }
 

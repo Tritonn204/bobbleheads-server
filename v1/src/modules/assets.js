@@ -1,4 +1,8 @@
 import SpriteSheet from './SpriteSheet.js';
+import { Level } from './level.js';
+
+const layerManager = require('./layers.js');
+const assetManager = require("./assets.js");
 
 export function loadImage(url) {
     return new Promise(resolve => {
@@ -27,7 +31,30 @@ export function loadLevelAssets(index) {
     });
 }
 
-export function loadLevelData(index) {
-    return fetch('res/levels/' + index + '/' + index + '.txt')
-    .then(r => r.json())
+export function loadLevel(index) {
+    return Promise.all([
+        fetch('res/levels/' + index + '/' + index + '.txt')
+        .then(r => r.json()),
+
+        loadLevelAssets(index)
+    ])
+    .then(([data, sprites]) => {
+        const level = new Level();
+
+        //Store level data in memory
+        level.loadTileData(data);
+        level.loadCollisionData(data);
+        level.tileSet = sprites;
+
+        //Create map layer
+        const mapLayer = layerManager.createBG(level, sprites);
+        level.comp.layers.push(() => layerManager.createBG(level, sprites));
+
+        //Create entity layer
+        const charLayer = layerManager.createCharLayer(level.entities);
+        level.comp.layers.push(() => layerManager.createCharLayer(level.entities));
+        //Load collision data
+
+        return level;
+    });
 }
