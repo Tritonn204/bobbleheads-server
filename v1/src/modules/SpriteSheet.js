@@ -1,12 +1,13 @@
+import * as PIXI from 'pixi.js';
 import { Rectangle, Texture } from 'pixi.js';
 
-
 class SpriteSheet {
-    constructor(image, width, height) {
+    constructor(image, width, height, padding = 4) {
         this.image = image;
         this.width = width;
         this.height = height;
         this.tiles = new Map();
+        this.padding = padding;
     }
 
     define(name, x, y) {
@@ -15,15 +16,13 @@ class SpriteSheet {
         this.tiles.set(name, new Texture(baseTex, new Rectangle(x, y, this.width, this.height)));
     }
 
-    getTileTexture(index){
+    getTileTexture(index, padding = 4, level){
         const xLength = this.image.width/this.width;
 
-        let X = (index % xLength) * this.width;
-        let Y = Math.floor(index/xLength) * this.height;
+        const baseTex = Texture.from(level.tileTextures[index]);
+        const tileTexture = new Texture(baseTex, new Rectangle(this.padding/2, this.padding/2, this.width, this.height));
 
-        const baseTex = Texture.from(this.image);
-
-        return new Texture(baseTex, new Rectangle(X, Y, this.width, this.height));
+        return tileTexture;
     }
 }
 

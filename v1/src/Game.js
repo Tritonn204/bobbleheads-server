@@ -27,7 +27,7 @@ function Game() {
 
     //Canvas/Screen Buffer
     const canvasRef = useRef();
-    const [gScale, setGScale] = useState();
+    const [gScale, setGScale] = useState(1);
     const [gWidth, setGWidth] = useState();
     const [gHeight, setGHeight] = useState();
     const [testLevel, setTestLevel] = useState();
@@ -53,10 +53,6 @@ function Game() {
     // }, []);
 
     //Sizes game window on page load, and enables dynamic resizing
-    useEffect(() => {
-        scaleWindow();
-        addListeners();
-    }, [])
 
     const addListeners = () => {
         window.addEventListener('resize', e => {
@@ -67,8 +63,11 @@ function Game() {
     //Adjust game window size
     const scaleWindow = () => {
         var scaler = document.documentElement.clientHeight/18;
-        scaler = Math.max(24, scaler);
-        setGScale(scaler/64);
+        scaler = Math.max(24, scaler)/64;
+        if (gScale != scaler)
+            setGScale(scaler);
+
+        //Deprecated resizing calculations, PIXI can handle this better
         setGWidth(document.documentElement.clientWidth);
         setGHeight(document.documentElement.clientHeight);
     }
@@ -77,7 +76,6 @@ function Game() {
 
     //Initializes game on page load, after fetching required data from the server
     useEffect(() => {
-
         const loadMap = assetManager.loadLevel(0);
         const loadPlayer = assetManager.loadPlayer(0);
 
@@ -98,6 +96,8 @@ function Game() {
 
                 //Define the game loop update/render logic
                 const update = (time) => {
+                    scaleWindow();
+
                     setLevel(map);
                     setClock(Math.random());
                     //Compares real elapsed time with desired logic/physics framerate to maintain consistency
@@ -116,20 +116,20 @@ function Game() {
             })
     }, []);
 
-    const render = () => {
+    const render = (scale) => {
         if (level)
         {
             return (
                 <>
-                    {level.comp.draw()}
+                    {level.comp.draw(scale)}
                 </>
             )
         }
     }
 
     return (
-        <Stage width={gWidth} height={gHeight}>
-            {render()}
+        <Stage width={gWidth} height={gHeight} options={{backgroundColor: 0x87CEEB, resizeTo: window, antialias: false}}>
+            {render(gScale)}
         </Stage>
     )
 }

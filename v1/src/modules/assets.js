@@ -17,7 +17,7 @@ export function loadImage(url) {
 export function loadPlayer(index) {
     return loadImage('res/avatars/' + index + '.png')
     .then(image => {
-        const sprites = new SpriteSheet(image, 100, 160);
+        const sprites = new SpriteSheet(image, 100, 160, 0);
         sprites.define('idle',0,0);
         return sprites;
     });
@@ -26,7 +26,7 @@ export function loadPlayer(index) {
 export function loadLevelAssets(index) {
     return loadImage('res/levels/' + index + '/' + index + '.png')
     .then(image => {
-        const sprites = new SpriteSheet(image, 64, 64);
+        const sprites = new SpriteSheet(image, 64, 64, 0);
         return sprites;
     });
 }
@@ -40,19 +40,19 @@ export function loadLevel(index) {
     ])
     .then(([data, sprites]) => {
         const level = new Level();
+        level.tileSet = sprites;
 
         //Store level data in memory
         level.loadTileData(data);
         level.loadCollisionData(data);
-        level.tileSet = sprites;
+        level.loadTextureData(data);
 
         //Create map layer
-        const mapLayer = layerManager.createBG(level, sprites);
-        level.comp.layers.push(() => layerManager.createBG(level, sprites));
+        const mapLayer = (scale = 1) => layerManager.createBG(level, scale);
+        level.comp.layers.push(mapLayer);
 
         //Create entity layer
-        const charLayer = layerManager.createCharLayer(level.entities);
-        level.comp.layers.push(() => layerManager.createCharLayer(level.entities));
+        level.comp.layers.push((scale = 1) => layerManager.createCharLayer(level.entities, scale));
         //Load collision data
 
         return level;

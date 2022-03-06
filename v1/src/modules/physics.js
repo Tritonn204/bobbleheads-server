@@ -83,13 +83,26 @@ export class TileCollider {
             entity.pos.y);
 
         floorMatches.forEach(match => {
-            if (entity.vel.y > 0 && floorTiles.includes(match.tile)) {
-                if (entity.pos.y + entity.height > match.y1 && entity.pos.y + entity.height < match.y1 + 32 ) {
-                    entity.pos.y = match.y1 - entity.height;
-                    entity.vel.y = 0;
-                    entity.isGrounded = true;
-                } else {
-                    entity.isGrounded = false;
+            if (match.tile != 1){
+                const threshold = 16;
+                if (entity.vel.y > 0 && floorTiles.includes(match.tile)) {
+                    if (entity.pos.y + entity.height > match.y1 && entity.pos.y + entity.height < match.y1 + threshold ) {
+                        entity.pos.y = match.y1 - entity.height;
+                        entity.vel.y = 0;
+                        entity.isGrounded = true;
+                    } else {
+                        entity.isGrounded = false;
+                    }
+                }
+            } else {
+                if (entity.vel.y > 0 && floorTiles.includes(match.tile)) {
+                    if (entity.pos.y + entity.height > match.y1 && entity.pos.y + entity.height < match.y2 ) {
+                        entity.pos.y = match.y1 - entity.height;
+                        entity.vel.y = 0;
+                        entity.isGrounded = true;
+                    } else {
+                        entity.isGrounded = false;
+                    }
                 }
             }
         });

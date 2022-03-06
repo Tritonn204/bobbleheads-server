@@ -3,6 +3,7 @@ import { Matrix } from './util.js';
 import { TileCollider } from './physics.js';
 
 const physics = require('./physics.js');
+const tileUtil = require('./tileutil.js');
 
 export class Level {
     constructor() {
@@ -12,6 +13,7 @@ export class Level {
         this.tiles = new Matrix();
         this.collisionData = new Matrix();
         this.tileSet = null;
+        this.tileTextures = [];
 
         this.tileCollision = new TileCollider(this.collisionData);
     }
@@ -51,6 +53,18 @@ export class Level {
                     layer.positions.forEach(tile => {
                         this.collisionData.set(tile.x, tile.y,parseInt(layer.name.split("_").pop()));
                     });
+            }
+        });
+    }
+
+    loadTextureData(data) {
+        data.layers.forEach(layer => {
+            if (!layer.name.includes('collision')){
+                layer.positions.forEach(tile => {
+                    if (!this.tileTextures[tile.id]) {
+                        this.tileTextures[tile.id] = tileUtil.tileBuffer(tile.id, this);
+                    }
+                });
             }
         });
     }

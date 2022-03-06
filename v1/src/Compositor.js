@@ -4,17 +4,17 @@ class Compositor {
         this.layers = [];
     }
 
-    draw = () => {
-        return RENDA(this.layers);
+    draw = (scale) => {
+        return RENDA(this.layers, scale);
     }
 }
 
-export const RENDA = (layers) => {
+export const RENDA = (layers, scale) => {
     return (
         <>
             {layers.map(layer => (
                 <>
-                    {layer()}
+                    {layer(scale)}
                 </>
             ))
         }
