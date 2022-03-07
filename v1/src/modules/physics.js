@@ -84,7 +84,7 @@ export class TileCollider {
 
         floorMatches.forEach(match => {
             if (match.tile != 1){
-                const threshold = 16;
+                const threshold = 24;
                 if (entity.vel.y > 0 && floorTiles.includes(match.tile)) {
                     if (entity.pos.y + entity.height > match.y1 && entity.pos.y + entity.height < match.y1 + threshold ) {
                         entity.pos.y = match.y1 - entity.height;

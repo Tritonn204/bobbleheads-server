@@ -48,11 +48,11 @@ export function loadLevel(index) {
         level.loadTextureData(data);
 
         //Create map layer
-        const mapLayer = (scale = 1) => layerManager.createBG(level, scale);
+        const mapLayer = (scale = 1, cam) => layerManager.createBG(level, scale, cam);
         level.comp.layers.push(mapLayer);
 
         //Create entity layer
-        level.comp.layers.push((scale = 1) => layerManager.createCharLayer(level.entities, scale));
+        level.comp.layers.push((scale = 1, cam) => layerManager.createCharLayer(level.entities, scale, cam));
         //Load collision data
 
         return level;

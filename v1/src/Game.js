@@ -6,6 +6,7 @@ import Compositor from './Compositor.js';
 import { Stage, Sprite } from '@inlet/react-pixi'
 
 import { createChar } from './modules/entities.js';
+import Camera from './modules/camera.js';
 
 import { Keyboard, KeyCodes } from './modules/input.js';
 import { bindKeys } from './modules/controls.js';
@@ -35,6 +36,8 @@ function Game() {
     const [level, setLevel] = useState();
     const [comp, setComp] = useState();
     const [clock, setClock] = useState(0);
+
+    const [camera, setCamera] = useState(new Camera());
 
     let gameLoop = useRef();
 
@@ -121,7 +124,7 @@ function Game() {
         {
             return (
                 <>
-                    {level.comp.draw(scale)}
+                    {level.comp.draw(scale, camera)}
                 </>
             )
         }
@@ -129,7 +132,7 @@ function Game() {
 
     return (
         <Stage width={gWidth} height={gHeight} options={{backgroundColor: 0x87CEEB, resizeTo: window, antialias: false}}>
-            {render(gScale)}
+            {render(gScale, camera)}
         </Stage>
     )
 }

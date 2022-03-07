@@ -13,8 +13,8 @@ export function createChar(index) {
         char.addTrait(new Jump());
         char.addTrait(new Run());
 
-        char.draw = (scale) => {
-            return tileUtil.draw('idle', sprites, char.pos.x, char.pos.y, scale);
+        char.draw = (scale, cam) => {
+            return tileUtil.draw('idle', sprites, cam, char.pos.x, char.pos.y, scale);
         }
 
         return char;

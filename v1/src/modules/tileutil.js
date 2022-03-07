@@ -2,7 +2,12 @@ import { Sprite } from '@inlet/react-pixi';
 
 export const tilePadding = 4;
 
-export const draw = (name, tileset, x, y, scale) => {
+export const draw = (name, tileset, cam, x, y, scale) => {
+    if (x < cam.pos.x - tileset.width || x > cam.pos.x + cam.width + tileset.width)
+        return;
+    if (y < cam.pos.y - tileset.height || y > cam.pos.y + cam.height + tileset.height)
+        return;
+
     const { width, height } = tileset;
     const texture = tileset.tiles.get(name);
     return (
@@ -15,6 +20,26 @@ export const draw = (name, tileset, x, y, scale) => {
         />
     );
 
+}
+
+export const drawTile = (index, level, cam, x, y, scale) => {
+    if (x < cam.pos.x - level.tileSet.width || x > cam.pos.x + cam.width + level.tileSet.width)
+        return;
+    if (y < cam.pos.y - level.tileSet.height || y > cam.pos.y + cam.height + level.tileSet.height)
+        return;
+
+    const { width, height } = level.tileSet;
+    const texture = level.tileSet.getTileTexture(index, 4, level);
+    const sprite = (
+        <Sprite
+            texture={texture}
+            x={x*width*scale}
+            y={y*height*scale}
+            width={width*scale}
+            height={height*scale}
+        />
+    )
+    return sprite;
 }
 
 export const tileBuffer = (index, level) => {
@@ -42,19 +67,4 @@ export const tileBuffer = (index, level) => {
     );
 
     return buffer;
-}
-
-export const drawTile = (index, level, x, y, scale) => {
-    const { width, height } = level.tileSet;
-    const texture = level.tileSet.getTileTexture(index, 4, level);
-    const sprite = (
-        <Sprite
-            texture={texture}
-            x={x*width*scale}
-            y={y*height*scale}
-            width={width*scale}
-            height={height*scale}
-        />
-    )
-    return sprite;
 }

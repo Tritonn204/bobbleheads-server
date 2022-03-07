@@ -1,3 +1,5 @@
+const physics = require('./physics.js');
+
 //Javascript key codes
 const SPACE = 32;
 const W = 87;
@@ -7,7 +9,7 @@ const D = 68;
 
 export function bindKeys(player, keyboard, window) {
     keyboard.addMapping(SPACE, keyState => {
-        if (keyState && player.isGrounded ) {
+        if (keyState && player.isGrounded && player.vel.y < physics.terminalVelocity) {
             player.jump.start();
             player.isGrounded = false;
         } else {

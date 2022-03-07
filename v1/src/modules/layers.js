@@ -1,7 +1,7 @@
 import { Sprite } from '@inlet/react-pixi';
 import { drawTile } from "./tileutil.js";
 
-export const createBG = (level, scale) => {
+export const createBG = (level, scale, cam) => {
     if (level.tileSet){
         return (
             <>
@@ -10,13 +10,13 @@ export const createBG = (level, scale) => {
                     if (level.bgTiles.get(x,y)){
                         return(
                         <>
-                            {drawTile(level.bgTiles.get(x,y),level,x,y,scale)}
-                            {drawTile(tileId,level,x,y,scale)}
+                            {drawTile(level.bgTiles.get(x,y),level,cam,x,y,scale)}
+                            {drawTile(tileId,level,cam,x,y,scale)}
                         </>);
                     } else {
                         return(
                             <>
-                            {drawTile(tileId,level,x,y,scale)}
+                            {drawTile(tileId,level,cam,x,y,scale)}
                             </>
                             );
                         }
@@ -30,12 +30,12 @@ export const createBG = (level, scale) => {
 }
 
 
-export const createCharLayer = (entities, scale) => {
+export const createCharLayer = (entities, scale, cam) => {
     return (
         <>
         {Array.from(entities).map(entity => (
             <>
-            {entity.draw(scale)}
+            {entity.draw(scale, cam)}
             </>
             )
         )}
