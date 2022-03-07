@@ -42,17 +42,23 @@ export function loadLevel(index) {
         const level = new Level();
         level.tileSet = sprites;
 
+        level.xCount = data.map_width;
+        level.width = level.xCount*data.tile_size;
+
+        level.yCount = data.map_height;
+        level.height = level.yCount*data.tile_size;
+
         //Store level data in memory
         level.loadTileData(data);
         level.loadCollisionData(data);
         level.loadTextureData(data);
 
         //Create map layer
-        const mapLayer = (scale = 1, cam) => layerManager.createBG(level, scale, cam);
+        const mapLayer = (scale = 1, cam, layer) => layerManager.createBG(level, scale, cam, layer);
         level.comp.layers.push(mapLayer);
 
         //Create entity layer
-        level.comp.layers.push((scale = 1, cam) => layerManager.createCharLayer(level.entities, scale, cam));
+        level.comp.layers.push((scale = 1, cam, layer) => layerManager.createCharLayer(level.entities, scale, cam));
         //Load collision data
 
         return level;

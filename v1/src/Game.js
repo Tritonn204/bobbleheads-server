@@ -27,7 +27,7 @@ function Game() {
     const socketRef = useRef();
 
     //Canvas/Screen Buffer
-    const canvasRef = useRef();
+    const screenRef = useRef();
     const [gScale, setGScale] = useState(1);
     const [gWidth, setGWidth] = useState();
     const [gHeight, setGHeight] = useState();
@@ -55,36 +55,30 @@ function Game() {
     //         }
     // }, []);
 
-    //Sizes game window on page load, and enables dynamic resizing
+    const updateCam = (char, level, delta) => {
+      const {innerWidth : w, innerHeight: h } = window;
 
-    const addListeners = () => {
-        window.addEventListener('resize', e => {
-            scaleWindow();
-        });
+      var scaler = h/18;
+      scaler = Math.max(24, scaler)/64;
+      if (gScale != scaler)
+          setGScale(scaler);
+
+      camera.setSize(
+         w/scaler,
+         h/scaler
+      );
+      camera.update(char, level, delta);
     }
-
-    //Adjust game window size
-    const scaleWindow = () => {
-        var scaler = document.documentElement.clientHeight/18;
-        scaler = Math.max(24, scaler)/64;
-        if (gScale != scaler)
-            setGScale(scaler);
-
-        //Deprecated resizing calculations, PIXI can handle this better
-        setGWidth(document.documentElement.clientWidth);
-        setGHeight(document.documentElement.clientHeight);
-    }
-
-
 
     //Initializes game on page load, after fetching required data from the server
     useEffect(() => {
         const loadMap = assetManager.loadLevel(0);
         const loadPlayer = assetManager.loadPlayer(0);
 
+        const c = new Camera();
+
         Promise.all([loadMap,createChar(0)])
             .then(([map, char]) => {
-
                 //Loads keyboard handling logic
                 const input = new Keyboard();
                 let lastTime = 0;
@@ -99,8 +93,6 @@ function Game() {
 
                 //Define the game loop update/render logic
                 const update = (time) => {
-                    scaleWindow();
-
                     setLevel(map);
                     setClock(Math.random());
                     //Compares real elapsed time with desired logic/physics framerate to maintain consistency
@@ -110,6 +102,7 @@ function Game() {
 
                     while (accumulatedTime > delta) {
                         map.update(delta);
+                        updateCam(char, map, delta);
                         accumulatedTime -= delta;
                     }
                     gameLoop.current = requestAnimationFrame(update);
@@ -131,7 +124,7 @@ function Game() {
     }
 
     return (
-        <Stage width={gWidth} height={gHeight} options={{backgroundColor: 0x87CEEB, resizeTo: window, antialias: false}}>
+        <Stage ref={screenRef} options={{backgroundColor: 0x87CEEB, resizeTo: window}}>
             {render(gScale, camera)}
         </Stage>
     )

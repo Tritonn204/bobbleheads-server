@@ -8,13 +8,16 @@ export const draw = (name, tileset, cam, x, y, scale) => {
     if (y < cam.pos.y - tileset.height || y > cam.pos.y + cam.height + tileset.height)
         return;
 
+    const camX = cam.pos.x*scale;
+    const camY = cam.pos.y*scale;
+
     const { width, height } = tileset;
     const texture = tileset.tiles.get(name);
     return (
         <Sprite
         texture={texture}
-        x={x*scale}
-        y={y*scale}
+        x={x*scale - camX}
+        y={y*scale - camY}
         width={width*scale}
         height={height*scale}
         />
@@ -23,18 +26,25 @@ export const draw = (name, tileset, cam, x, y, scale) => {
 }
 
 export const drawTile = (index, level, cam, x, y, scale) => {
-    if (x < cam.pos.x - level.tileSet.width || x > cam.pos.x + cam.width + level.tileSet.width)
+    const { width, height } = level.tileSet;
+
+    const X = x*width;
+    const Y = y*height;
+
+    const camX = cam.pos.x*scale;
+    const camY = cam.pos.y*scale;
+
+    if (X < cam.pos.x - width || X > cam.pos.x + cam.width + (width*3))
         return;
-    if (y < cam.pos.y - level.tileSet.height || y > cam.pos.y + cam.height + level.tileSet.height)
+    if (Y < cam.pos.y - height || Y > cam.pos.y + cam.height + (height*3))
         return;
 
-    const { width, height } = level.tileSet;
     const texture = level.tileSet.getTileTexture(index, 4, level);
     const sprite = (
         <Sprite
             texture={texture}
-            x={x*width*scale}
-            y={y*height*scale}
+            x={X*scale - camX}
+            y={Y*scale - camY}
             width={width*scale}
             height={height*scale}
         />

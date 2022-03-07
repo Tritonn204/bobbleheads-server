@@ -15,6 +15,11 @@ export class Level {
         this.tileSet = null;
         this.tileTextures = [];
 
+        this.xCount = 1;
+        this.yCount = 1;
+        this.width = 0;
+        this.height = 0;
+
         this.tileCollision = new TileCollider(this.collisionData);
     }
 

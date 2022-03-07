@@ -12,7 +12,7 @@ class Compositor {
 export const RENDA = (layers, scale, camera) => {
     return (
         <>
-            {layers.map(layer => (
+            {layers.map((layer, index) => (
                 <>
                     {layer(scale, camera)}
                 </>

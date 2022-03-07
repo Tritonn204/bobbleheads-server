@@ -10,6 +10,10 @@ export class Vec2 {
     }
 }
 
+export const lerp = (start, end, amt) => {
+  return ((1-amt)*start+(amt*end));
+}
+
 export class Matrix {
     constructor() {
         this.grid = [];
