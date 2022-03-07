@@ -21,6 +21,7 @@ export class Level {
     update(delta) {
         this.entities.forEach((entity) => {
             entity.update(delta);
+            entity.vel.y += physics.gravity*delta;
 
             entity.pos.x += entity.vel.x*delta
             this.tileCollision.checkX(entity);
@@ -28,7 +29,6 @@ export class Level {
             entity.pos.y += entity.vel.y*delta;
             this.tileCollision.checkY(entity);
 
-            entity.vel.y += physics.gravity*delta;
             if (entity.vel.y > physics.terminalVelocity)
                 entity.vel.y = physics.terminalVelocity;
         });

@@ -9,7 +9,7 @@ const D = 68;
 
 export function bindKeys(player, keyboard, window) {
     keyboard.addMapping(SPACE, keyState => {
-        if (keyState && player.isGrounded && player.vel.y < physics.terminalVelocity) {
+        if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
             player.jump.start();
             player.isGrounded = false;
         } else {

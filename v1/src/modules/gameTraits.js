@@ -16,8 +16,8 @@ export class Run extends Trait {
         super('run');
 
         this.dir = 0;
-        this.acc = 3000;
-        this.speed = 650;
+        this.acc = 1300;
+        this.speed = 750;
     }
 
     update(entity, delta) {
@@ -37,8 +37,8 @@ export class Jump extends Trait {
     constructor() {
         super('jump');
 
-        this.duration = 0.15;
-        this.velocity = 720;
+        this.duration = 0.2;
+        this.velocity = 730;
         this.engageTime = 0;
     }
 
