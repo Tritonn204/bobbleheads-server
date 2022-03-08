@@ -18,6 +18,9 @@
 .env.test.local
 .env.production.local
 
+# creation assets
+*.psd
+
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
