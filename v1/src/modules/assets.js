@@ -1,5 +1,6 @@
 import SpriteSheet from './SpriteSheet.js';
 import { Level } from './level.js';
+import { Spine } from 'pixi-spine';
 
 const layerManager = require('./layers.js');
 const assetManager = require("./assets.js");
