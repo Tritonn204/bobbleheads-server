@@ -9,7 +9,8 @@ export function createChar(index) {
     .then(sprites => {
         const char = new Entity(63,109);
 
-        char.pos.set(640, 0)
+        char.spawnPoint.set(640, 0);
+        char.pos.set(char.spawnPoint.x, char.spawnPoint.y);
 
         char.addTrait(new Velocity());
         char.addTrait(new Jump());

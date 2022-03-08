@@ -19,7 +19,7 @@ export function bindKeys(player, keyboard, window) {
 
     keyboard.addMapping(W, keyState => {
         if (keyState) {
-            player.pos.set(0,0);
+            player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
             player.vel.set(0,0);
         }
     });

@@ -14,6 +14,7 @@ export class Trait {
 export class Entity {
     constructor(width=0, height=0) {
         this.pos = new Vec2(0,0);
+        this.spawnPoint = new Vec2(0,0);
         this.vel = new Vec2(0,0);
 
         this.width = width;
