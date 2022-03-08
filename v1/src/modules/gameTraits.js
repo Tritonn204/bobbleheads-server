@@ -22,13 +22,18 @@ export class Run extends Trait {
 
     update(entity, delta) {
         if (entity.run.dir != 0){
-            if (Math.abs(entity.vel.x) < this.speed){
-                 entity.vel.x += this.acc * delta * entity.run.dir;
-            }
-            else
-                entity.vel.x = this.speed*entity.run.dir;
+            let accSpd = entity.vel.x + this.acc * delta * entity.run.dir;
+
+            if ((entity.run.dir > 0 && accSpd < 0) || (entity.run.dir < 0 && accSpd > 0))
+                accSpd = entity.vel.x * (entity.isGrounded ? 0.6 : 0.85) / (1-delta);
+            if (accSpd > this.speed)
+                accSpd = this.speed;
+            if (accSpd < -this.speed)
+                accSpd = -this.speed;
+
+            entity.vel.x = accSpd;
         } else {
-            entity.vel.x *= 0.6 / (1-delta);
+            entity.vel.x *= (entity.isGrounded ? 0.6 : 0.925) / (1-delta);
         }
     }
 }

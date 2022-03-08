@@ -25,11 +25,11 @@ export function bindKeys(player, keyboard, window) {
     });
 
     keyboard.addMapping(D, keyState => {
-        player.run.dir = keyState;
+        player.run.dir += keyState ? 1 : -1;
     });
 
     keyboard.addMapping(A, keyState => {
-        player.run.dir = -keyState;
+        player.run.dir += keyState ? -1 : 1;
     });
 
     keyboard.listenTo(window);

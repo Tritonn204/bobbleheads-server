@@ -17,7 +17,7 @@ export function loadImage(url) {
 export function loadPlayer(index) {
     return loadImage('res/avatars/' + index + '.png')
     .then(image => {
-        const sprites = new SpriteSheet(image, 100, 160, 0);
+        const sprites = new SpriteSheet(image, 63, 109, 0);
         sprites.define('idle',0,0);
         return sprites;
     });

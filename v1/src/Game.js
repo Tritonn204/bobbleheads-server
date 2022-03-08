@@ -58,7 +58,7 @@ function Game() {
     const updateCam = (char, level, delta) => {
       const {innerWidth : w, innerHeight: h } = window;
 
-      var scaler = h/18;
+      var scaler = h/14;
       scaler = Math.max(24, scaler)/64;
       if (gScale != scaler)
           setGScale(scaler);
@@ -72,7 +72,7 @@ function Game() {
 
     //Initializes game on page load, after fetching required data from the server
     useEffect(() => {
-        const loadMap = assetManager.loadLevel(0);
+        const loadMap = assetManager.loadLevel(1);
         const loadPlayer = assetManager.loadPlayer(0);
 
         const c = new Camera();
@@ -124,7 +124,7 @@ function Game() {
     }
 
     return (
-        <Stage ref={screenRef} options={{backgroundColor: 0x87CEEB, resizeTo: window}}>
+        <Stage width={window.innerWidth} height={window.innerHeight} ref={screenRef} options={{backgroundColor: 0x87CEEB, resizeTo: window}}>
             {render(gScale, camera)}
         </Stage>
     )

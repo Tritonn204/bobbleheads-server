@@ -7,7 +7,9 @@ const tileUtil = require("./tileutil.js");
 export function createChar(index) {
     return loadPlayer(index)
     .then(sprites => {
-        const char = new Entity(100,160);
+        const char = new Entity(63,109);
+
+        char.pos.set(640, 0)
 
         char.addTrait(new Velocity());
         char.addTrait(new Jump());
