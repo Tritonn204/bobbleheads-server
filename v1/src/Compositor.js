@@ -4,22 +4,11 @@ class Compositor {
         this.layers = [];
     }
 
-    draw = (scale, camera) => {
-        return RENDA(this.layers, scale, camera);
+    draw = (app, scale, camera) => {
+        this.layers.map((layer, index) => {
+            layer(app, scale, camera);
+        })
     }
-}
-
-export const RENDA = (layers, scale, camera) => {
-    return (
-        <>
-            {layers.map((layer, index) => (
-                <>
-                    {layer(scale, camera)}
-                </>
-            ))
-        }
-        </>
-    )
 }
 
 export default Compositor;

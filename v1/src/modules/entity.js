@@ -20,8 +20,21 @@ export class Entity {
         this.width = width;
         this.height = height;
 
+        this.skelWidth = width;
+        this.skelHeight = height;
+
+        this.turnTime = 0.05;
+
+        this.skelDir = 1;
+        this.facing = 1;
+
+        this.flipX = false;
+
         this.traits = [];
         this.isGrounded = false;
+
+        this.skeleton = null;
+        this.currentAnimation = '';
     }
 
     addTrait(trait) {
@@ -33,5 +46,27 @@ export class Entity {
         this.traits.forEach(trait => {
             trait.update(this, delta);
         });
+
+        this.animate(delta);
+        this.getDirection(delta);
+    }
+
+    getDirection(delta) {
+        if (this.run && this.run.dir < 0){
+            this.facing = -1;
+        }
+        if (this.run && this.run.dir > 0){
+            this.facing = 1;
+        }
+        if (this.facing < 0)
+            if (this.skelDir > -1){
+                this.skelDir -= delta/ this.turnTime;
+            }
+
+        if (this.facing > 0)
+            if (this.skelDir < 1){
+                this.skelDir += delta/ this.turnTime;
+            }
+        this.skelDir = Math.min(Math.max(this.skelDir, -1), 1);
     }
 }

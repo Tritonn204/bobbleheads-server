@@ -1,0 +1,43 @@
+Bobbleheads.png
+size:1926,1926
+filter:Linear,Linear
+pma:true
+scale:0.3
+Bangs
+bounds:0,1446,480,480
+Hair
+bounds:0,1446,480,480
+Hairback
+bounds:0,1446,480,480
+Weapon R
+bounds:0,1446,480,480
+Earrings
+bounds:0,964,480,480
+Eyes
+bounds:0,482,480,480
+Glasses
+bounds:0,0,480,480
+Hat
+bounds:482,1446,480,480
+Head
+bounds:964,1446,480,480
+Left Arm
+bounds:1446,1446,480,480
+Left Leg
+bounds:482,964,480,480
+LeftSleeve
+bounds:482,482,480,480
+Mouth
+bounds:482,0,480,480
+Neck
+bounds:964,964,480,480
+Pants
+bounds:1446,964,480,480
+Right Arm
+bounds:964,482,480,480
+Torso
+bounds:964,0,480,480
+TorsoTop
+bounds:1446,482,480,480
+Weapon L
+bounds:1446,0,480,480

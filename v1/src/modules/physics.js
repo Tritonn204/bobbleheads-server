@@ -1,4 +1,4 @@
-export const gravity = 4000;
+export const gravity = 3000;
 export const terminalVelocity = 1000;
 
 export const jumpTolerance = 256;

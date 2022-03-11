@@ -16,10 +16,10 @@ class SpriteSheet {
         this.tiles.set(name, new Texture(baseTex, new Rectangle(x, y, this.width, this.height)));
     }
 
-    getTileTexture(index, padding = 4, level){
+    getTileTexture(index, padding = 4, tileTextures){
         const xLength = this.image.width/this.width;
 
-        const baseTex = Texture.from(level.tileTextures[index]);
+        const baseTex = Texture.from(tileTextures[index]);
         const tileTexture = new Texture(baseTex, new Rectangle(this.padding/2, this.padding/2, this.width, this.height));
 
         return tileTexture;

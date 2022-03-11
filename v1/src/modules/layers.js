@@ -1,33 +1,6 @@
-import { Sprite } from '@inlet/react-pixi';
-import { drawTile } from "./tileutil.js";
-
-export const createBG = (level, scale, cam) => {
-    if (level.tileSet){
-        return (
-            <>
-            {level.tiles.grid.map((column, x) => (
-                column.map((tileId, y) => {
-                    if (level.bgTiles.get(x,y)){
-                        return(
-                        <>
-                            {drawTile(level.bgTiles.get(x,y),level,cam,x,y,scale)}
-                            {drawTile(tileId,level,cam,x,y,scale)}
-                        </>);
-                    } else {
-                        return(
-                            <>
-                            {drawTile(tileId,level,cam,x,y,scale)}
-                            </>
-                            );
-                        }
-                        }
-                    )
-                )
-            )}
-            </>
-        )
-    }
-}
+import { Container } from 'pixi.js';
+import { drawTile, updateTile } from "./tileutil.js";
+import * as PIXI from "pixi.js";
 
 
 export const createCharLayer = (entities, scale, cam) => {

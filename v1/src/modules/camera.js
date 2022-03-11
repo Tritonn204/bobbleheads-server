@@ -6,6 +6,7 @@ export default class Camera {
         this.width = width;
         this.height = height;
         this.speed = speed;
+        this.scale = 1;
     }
 
     update(entity, level, delta) {
@@ -35,8 +36,9 @@ export default class Camera {
         this.pos.set(newX - offsetX, newY - offsetY);
     }
 
-    setSize(w, h) {
+    setSize(w, h, scale) {
       this.width = w;
       this.height = h;
+      this.scale = scale;
     }
 }

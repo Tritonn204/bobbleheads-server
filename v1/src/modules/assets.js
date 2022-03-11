@@ -1,3 +1,4 @@
+
 import SpriteSheet from './SpriteSheet.js';
 import { Level } from './level.js';
 import { Spine } from 'pixi-spine';
@@ -32,7 +33,7 @@ export function loadLevelAssets(index) {
     });
 }
 
-export function loadLevel(index) {
+export function loadLevel(app, index) {
     return Promise.all([
         fetch('res/levels/' + index + '/' + index + '.txt')
         .then(r => r.json()),
@@ -41,6 +42,7 @@ export function loadLevel(index) {
     ])
     .then(([data, sprites]) => {
         const level = new Level();
+        level.data = data;
         level.tileSet = sprites;
 
         level.xCount = data.map_width;
@@ -50,16 +52,12 @@ export function loadLevel(index) {
         level.height = level.yCount*data.tile_size;
 
         //Store level data in memory
-        level.loadTileData(data);
-        level.loadCollisionData(data);
-        level.loadTextureData(data);
-
-        //Create map layer
-        const mapLayer = (scale = 1, cam, layer) => layerManager.createBG(level, scale, cam, layer);
-        level.comp.layers.push(mapLayer);
+        level.loadTextureData();
+        level.loadTileData(app.stage);
+        level.loadCollisionData();
 
         //Create entity layer
-        level.comp.layers.push((scale = 1, cam, layer) => layerManager.createCharLayer(level.entities, scale, cam));
+        level.comp.layers.push((app, scale = 1, cam) => layerManager.createCharLayer(level.entities, scale, cam));
         //Load collision data
 
         return level;
