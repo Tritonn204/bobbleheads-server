@@ -1,4 +1,6 @@
 import { Vec2 } from './util.js';
+import * as PIXI from "pixi.js";
+
 const physics = require('./physics.js');
 
 export class Trait {
@@ -17,18 +19,34 @@ export class Entity {
         this.spawnPoint = new Vec2(0,0);
         this.vel = new Vec2(0,0);
 
+        this.bounds = new physics.BoundingBox(this.pos, new Vec2(width, height), new Vec2(0,0));
+        this.attackBounds = new physics.BoundingBox(new Vec2(-width,-height), new Vec2(width*1.25, height), new Vec2(width*1.25,0));
+
+        this.hpBar = PIXI.Sprite.from(PIXI.Texture.WHITE);
+        this.hpFill= PIXI.Sprite.from(PIXI.Texture.WHITE);
+
         this.width = width;
         this.height = height;
 
         this.skelWidth = width;
         this.skelHeight = height;
 
+        this.baseHP = 1000;
+        this.hp = this.baseHP;
+
+        this.hurtTime = 0;
+
         this.turnTime = 0.05;
 
         this.skelDir = 1;
         this.facing = 1;
+        this.hitSource = 1;
+
+        this.guard = false;
+        this.ragdoll = false;
 
         this.flipX = false;
+        this.crouching = false;
 
         this.traits = [];
         this.isGrounded = false;
@@ -43,12 +61,55 @@ export class Entity {
     }
 
     update(delta) {
+        if (this.isGrounded && this.vel.y == 0)
+            this.ragdoll = false;
+
+        this.bounds.pos = this.pos;
+        this.hurtTime += delta;
+
         this.traits.forEach(trait => {
             trait.update(this, delta);
         });
 
         this.animate(delta);
         this.getDirection(delta);
+    }
+
+    collides(cantidate) {
+
+    }
+
+    hit(cantidate) {
+
+    }
+
+    hurt(cantidate) {
+        if (this.hurtTime >= physics.hitCooldown){
+            if (cantidate.punch){
+                this.hp -= 10;
+                const dir = cantidate.pos.x < this.pos.x ? 1 : -1;
+                this.hitSource = dir;
+                if (cantidate.punch.index == 2) {
+                    this.hp -= 50;
+                    this.ragdoll = true;
+                    this.isGrounded = false;
+                    this.vel.x = this.getImpactVelocity()*dir;
+                    this.vel.y = -800;
+                    console.log("Took hit from", cantidate);
+                }
+            }
+            this.hurtTime = 0;
+        }
+    }
+
+    drawHP(app) {
+        app.stage.addChild(this.hpBar.hpBorder);
+        app.stage.addChild(this.hpBar.hpBar);
+        app.stage.addChild(this.hpBar.hpFill);
+    }
+
+    getImpactVelocity() {
+        return 500;
     }
 
     getDirection(delta) {

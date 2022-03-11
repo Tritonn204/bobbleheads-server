@@ -1,6 +1,6 @@
 import Compositor from '../Compositor.js';
 import { Matrix } from './util.js';
-import { TileCollider } from './physics.js';
+import { TileCollider, EntityCollider } from './physics.js';
 import * as PIXI from "pixi.js";
 
 const physics = require('./physics.js');
@@ -23,6 +23,7 @@ export class Level {
         this.width = 0;
         this.height = 0;
 
+        this.entityCollision = new EntityCollider(this.entities);
         this.tileCollision = new TileCollider(this.collisionData);
     }
 
@@ -35,22 +36,43 @@ export class Level {
                     const renderTile = tileUtil.drawTile(tile.id, this.tileSet, cam, x, y, cam.scale);
                     if (renderTile){
                         const { sX, sY, sW, sH } = renderTile;
-                        if (this.bgTiles.get(x,y)){
-                            this.bgTiles.get(x,y).position.set(sX, sY);
-                            this.bgTiles.get(x,y).width = sW;
-                            this.bgTiles.get(x,y).height = sH;
-                        }
-                        if (this.tiles.get(x,y)){
+                        if (sX < -this.tileSet.width*cam.scale
+                            || sY < -this.tileSet.height*cam.scale
+                            || sX > cam.width*cam.scale
+                            || sY > cam.height*cam.scale
+                        ) {
+                                if (this.bgTiles.get(x,y))
+                                    this.bgTiles.get(x,y).visible = false;
+                                if (this.tiles.get(x,y))
+                                    this.tiles.get(x,y).visible = false;
+                        } else {
+                            if (this.bgTiles.get(x,y)){
+                                this.bgTiles.get(x,y).visible = true;
+                                this.bgTiles.get(x,y).position.set(sX, sY);
+                                this.bgTiles.get(x,y).width = sW;
+                                this.bgTiles.get(x,y).height = sH;
+                            }
                             if (this.tiles.get(x,y)){
-                                this.tiles.get(x,y).position.set(sX, sY);
-                                this.tiles.get(x,y).width = sW;
-                                this.tiles.get(x,y).height = sH;
+                                if (this.tiles.get(x,y)){
+                                    this.tiles.get(x,y).visible = true;
+                                    this.tiles.get(x,y).position.set(sX, sY);
+                                    this.tiles.get(x,y).width = sW;
+                                    this.tiles.get(x,y).height = sH;
+                                }
                             }
                         }
                     }
                 })
             }
         });
+
+        this.entities.forEach(entity => {
+            entity.render(cam, this.skeleton);
+        })
+    }
+
+    addInteractiveEntity(entity) {
+        this.entityCollision.entities.add(entity);
     }
 
     update(delta) {
@@ -63,6 +85,9 @@ export class Level {
 
             entity.pos.y += entity.vel.y*delta;
             this.tileCollision.checkY(entity);
+
+            this.entityCollision.check(entity);
+            this.entityCollision.checkAttack(entity);
 
             if (entity.vel.y > physics.terminalVelocity)
                 entity.vel.y = physics.terminalVelocity;

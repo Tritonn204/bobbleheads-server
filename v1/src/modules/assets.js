@@ -56,10 +56,6 @@ export function loadLevel(app, index) {
         level.loadTileData(app.stage);
         level.loadCollisionData();
 
-        //Create entity layer
-        level.comp.layers.push((app, scale = 1, cam) => layerManager.createCharLayer(level.entities, scale, cam));
-        //Load collision data
-
         return level;
     });
 }

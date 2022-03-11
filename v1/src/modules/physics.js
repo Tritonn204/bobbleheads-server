@@ -1,6 +1,6 @@
 export const gravity = 3000;
 export const terminalVelocity = 1000;
-
+export const hitCooldown = 0.15;
 export const jumpTolerance = 256;
 
 const floorTiles = [1,2];
@@ -65,13 +65,93 @@ class TileResolver {
   }
 }
 
+export class EntityCollider {
+    constructor(entities) {
+        this.entities = entities;
+    }
+
+    check(subject) {
+        this.entities.forEach(cantidate => {
+            if (subject === cantidate) {
+                return;
+            }
+
+            if (subject.bounds.overlaps(cantidate.bounds)) {
+                subject.collides(cantidate);
+                cantidate.collides(subject);
+            }
+        })
+    }
+
+    checkAttack(subject) {
+        this.entities.forEach(cantidate => {
+            if (subject === cantidate) {
+                return;
+            }
+
+            if (subject.attackBounds.overlaps(cantidate.bounds)) {
+                subject.hit(cantidate);
+                cantidate.hurt(subject);
+            }
+        })
+    }
+}
+
+export class BoundingBox {
+    constructor(pos, size, offset) {
+        this.pos = pos;
+        this.size = size;
+        this.offset = offset;
+    }
+
+    overlaps(box) {
+        return this.bottom > box.top
+            && this.top < box.bottom
+            && this.left < box.right
+            && this.right > box.left;
+    }
+
+    get bottom() {
+        return this.pos.y + this.size.y + this.offset.y;
+    }
+
+    set bottom(y) {
+        this.pos.y = y - (this.size.y + this.offset.y);
+    }
+
+    get top() {
+        return this.pos.y + this.offset.y;
+    }
+
+    set top(y) {
+        this.pos.y = y - this.offset.y;
+    }
+
+    get right() {
+        return this.pos.x + this.size.x + this.offset.x;
+    }
+
+    set right(x) {
+        this.pos.x = x - (this.size.x + this.offset.x);
+    }
+
+    get left() {
+        return this.pos.x + this.offset.x;
+    }
+
+    set left(x) {
+        this.pos.x = x - this.offset.x;
+    }
+}
+
+
 export class TileCollider {
   constructor(tileMatrix) {
     this.tiles = new TileResolver(tileMatrix);
   }
 
   checkY(entity) {
-    const threshold = 16;
+    const threshold = 20;
     const floorMatches = this.tiles.matchByRange(
       entity.pos.x + threshold,
       entity.pos.x + entity.width - threshold,
@@ -122,7 +202,7 @@ export class TileCollider {
   }
 
   checkX(entity) {
-    const threshold = 16;
+    const threshold = 20;
     const matches = this.tiles.matchByRange(
       entity.pos.x + threshold,
       entity.pos.x + entity.width - threshold,

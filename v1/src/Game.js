@@ -17,6 +17,7 @@ import { Spine } from 'pixi-spine';
 
 const physics = require("./modules/physics.js");
 const assetManager = require("./modules/assets.js");
+const animationManager = require("./modules/animation.js");
 const layerManager = require("./modules/layers.js");
 
 const loader = PIXI.Loader.shared;
@@ -103,16 +104,14 @@ function Game() {
 
         app.loader.load((loader, resources) => {
             const bh = createSkeleton(app, resources);
-            bh.stateData.setMix("Idle Left", "Walk Left", 0.2);
-            bh.stateData.setMix("Walk Left", "Idle Left",  0.2);
-            bh.stateData.setMix("Run Left", "Idle Left", 0.6);
-            bh.stateData.setMix("Idle Left", "Run Left", 0.6);
-            bh.stateData.setMix("Walk Left", "Run Left", 0.4);
-            bh.stateData.setMix("Run Left", "Walk Left", 0.4);
+            const dummy = createSkeleton(app, resources);
+            animationManager.bobbleheadMix(bh);
+            animationManager.bobbleheadMix(dummy);
 
-            Promise.all([loadMap,createChar(0)])
-                .then(([map, char]) => {
+            Promise.all([loadMap,createChar(0), createChar(0)])
+                .then(([map, char, prop]) => {
                     char.skeleton = bh;
+                    prop.skeleton = dummy;
 
                     //Loads keyboard handling logic
                     const input = new Keyboard();
@@ -124,11 +123,17 @@ function Game() {
                     bindKeys(char,input,window);
 
                     map.entities.add(char);
+                    map.entities.add(prop);
+
+                    char.drawHP(app);
+                    prop.drawHP(app);
+
+                    map.addInteractiveEntity(char);
+                    map.addInteractiveEntity(prop);
 
                     //Define the game loop update/render logic
                     const update = (time) => {
                          map.render(c);
-                         char.render(c, bh);
 
                          //Compares real elapsed time with desired logic/physics framerate to maintain consistency
                          //accumulatedTime marks how many seconds have passed since the last logic update
@@ -154,7 +159,7 @@ function Game() {
     }, []);
 
     return (
-        <div />
+        <div className='nobar' />
     )
 }
 

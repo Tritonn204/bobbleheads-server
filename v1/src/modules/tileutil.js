@@ -5,11 +5,6 @@ import * as PIXI from "pixi.js";
 export const tilePadding = 4;
 
 export const drawSpine = (entity, name, cam, x, y) => {
-    if (x < cam.pos.x - entity.width/2 || x > cam.pos.x + cam.width + entity.width)
-        return;
-    if (y < cam.pos.y - entity.height || y > cam.pos.y + cam.height + entity.height)
-        return;
-
     const camX = cam.pos.x*cam.scale;
     const camY = cam.pos.y*cam.scale;
 
@@ -28,11 +23,6 @@ export const drawTile = (index, tileset, cam, x, y, scale) => {
 
     const camX = cam.pos.x*scale;
     const camY = cam.pos.y*scale;
-
-    if (X < cam.pos.x - width || X > cam.pos.x + cam.width + (width*3))
-        return {sX: -width, sY: -height, sW: 0, sH: 0};
-    if (Y < cam.pos.y - height || Y > cam.pos.y + cam.height + (height*3))
-        return {sX: -width, sY: -height, sW: 0, sH: 0};
 
     const sx = X*scale - camX;
     const sy = Y*scale - camY;
