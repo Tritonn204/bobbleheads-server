@@ -73,6 +73,7 @@ export class Entity {
 
         this.animate(delta);
         this.getDirection(delta);
+        this.hp = Math.max(this.hp,0);
     }
 
     collides(cantidate) {

@@ -49,20 +49,6 @@ function Game() {
 
     let gameLoop = useRef();
 
-    //Establishes connection with the server
-    // useEffect(() => {
-    //         try {
-    //             //socketRef.current = socketIOClient(ENDPOINT);
-    //         }catch(e){
-    //             //console.log(e);
-    //         }
-    //         //Cleanup on dismount
-    //         return () => {
-    //             //if (socketRef)
-    //             //socketRef.current.disconnect();
-    //         }
-    // }, []);
-
     const getScale = () => {
       const w = window.innerWidth;
       const h = window.innerHeight;
@@ -71,6 +57,19 @@ function Game() {
       scaler = Math.max(24, scaler)/64;
 
       return scaler;
+    }
+
+    const connectToServer = () => {
+        try {
+            socketRef.current = socketIOClient(ENDPOINT);
+        }catch(e){
+            console.log(e);
+        }
+        //Cleanup on dismount
+        return () => {
+            if (socketRef)
+                socketRef.current.disconnect();
+        }
     }
 
     const animation = (app) => {
@@ -86,6 +85,8 @@ function Game() {
 
     //Initializes game on page load, after fetching required data from the server
     useEffect(() => {
+        connectToServer();
+
         const app = new PIXI.Application({
           width: window.innerWidth,
           height: window.innerHeight,
@@ -120,7 +121,7 @@ function Game() {
                     let delta = 1/60;
 
                     //Defines keybinds
-                    bindKeys(char,input,window);
+                    bindKeys(char,input,window, socketRef.current);
 
                     map.entities.add(char);
                     map.entities.add(prop);
