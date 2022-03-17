@@ -237,6 +237,8 @@ export function OnlineGame() {
                     createChar(userData.skeleton, key, server, false, serverState).then((player) => {
                         newPlayer(app, level, player);
                         player.pos.set(userData.pos.x, userData.pos.y)
+                        player.hp = userData.hp;
+                        player.facing = userData.facing;
                         serverState.players[key] = player;
                     });
                 }
