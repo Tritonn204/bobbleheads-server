@@ -80,6 +80,13 @@ export class Entity {
 
     }
 
+    destroy() {
+        this.skeleton.destroy(true);
+        this.hpBar.hpBorder.destroy(true);
+        this.hpBar.hpBar.destroy(true);
+        this.hpBar.hpFill.destroy(true);
+    }
+
     hit(cantidate) {
         if (this.punch){
             const dir = cantidate.pos.x > this.pos.x ? 1 : -1;
@@ -89,7 +96,6 @@ export class Entity {
                 this.isGrounded = false;
                 this.vel.x = this.getImpactVelocity()*dir/2;
                 this.vel.y = -500;
-                console.log("Took hit from", cantidate);
             }
         }
     }

@@ -1,4 +1,6 @@
-import { Vec2 } from './modules/util.js';
+const Vec2 = require('./modules/util.js').Vec2;
+const Level = require('./modules/level.js');
+const entities = require('./modules/entities.js');
 
 const express = require('express');
 const http = require('http');
@@ -6,8 +8,8 @@ const http = require('http');
 const port = process.env.PORT || 4001;
 const index = require("./routes/index");
 
-const interval = 1/25; //Server broadcast rate
-const delta = 1/60; //Server physics frame rate
+const interval = 1000/25; //Server broadcast rate
+const delta = 1000/60; //Server physics frame rate
 
 const app = express();
 app.use(index);
@@ -15,17 +17,25 @@ app.use(index);
 const server = http.createServer(app);
 
 const socketIo = require('socket.io');
+const level = new Level();
 
 const io = new socketIo.Server(server, {
     cors: {
-        origin: "http://localhost:3000",
+        origin: function(origin, callback) {
+            if (origin.includes("localhost")){
+                callback(null, true);
+            }
+            else {
+                callback(null, false);
+            }
+        },
         methods: ["GET", "POST"]
     }
 });
 
 io.on("connection", socket => {
     //Default Values per player instance
-    socket.userData = { pos: new Vec2(), vel: new Vec2(), heading: 0 };
+    socket.userData = { pos: new Vec2(0,0), vel: new Vec2(0,0), heading: 0, dir: 0 };
     console.log(`${socket.id} connected`);
 
     socket.on('init', data => {
@@ -36,13 +46,18 @@ io.on("connection", socket => {
         socket.userData.heading = data.h;
         socket.userData.pb = data.pb;
         socket.userData.command = null;
+        socket.userData.dir = 0;
+        newPlayer(data, socket.id);
+        socket.broadcast.emit('addPlayer', {
+            skeleton: data.skeleton,
+            id: socket.id
+        });
     });
 
     socket.on('input', data => {
         const button = data.key;
         socket.userData.command = data.key;
-    })
-
+    });
 
     //Handle removing players from client worlds
     socket.on("disconnect", () => {
@@ -53,16 +68,27 @@ io.on("connection", socket => {
     socket.on("chat message", msg => {
         console.log(msg);
     });
+
+    socket.on("loadLevel", levelData => {\
+        if (level.data) return;
+        level.data = levelData.data;
+        level.loadCollisionData();
+    })
 });
 
+const newPlayer = (data, id) => {
+    const player = entities.createChar(id);
+    player.pos = data.pos;
+    player.vel = data.vel;
+    level.entities.add(player);
+    level.addInteractiveEntity(player);
+}
+
 setInterval(() => {
-    const nsp = io.of('/');
     let pack = [];
 
-    for(let id in io.sockets.sockets) {
-        const socket = nsp.connected[id];
-        //Only push initialized sockets
-        if (socket.userData.skeleton !== undefined) {
+    for (const [_, socket] of io.of("/").sockets) {
+        if (socket.userData.skeleton != undefined)
             pack.push({
                 id: socket.id,
                 hp: socket.userData.hp,
@@ -72,10 +98,15 @@ setInterval(() => {
                 command: socket.userData.command,
                 heading: socket.userData.heading,
                 pb: socket.userData.pb,
+                dir: socket.userData.dir
             })
-        }
     }
+
     if (pack.length > 0) io.emit('remoteData', pack);
 }, interval);
+
+setInterval(() => {
+    level.update(delta/1000);
+}, delta);
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

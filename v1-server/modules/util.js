@@ -1,20 +1,20 @@
-export class Vec2 {
-    constructor(x,y) {
+class Vec2 {
+    constructor(x, y) {
         this.x = x;
         this.y = y;
     }
 
-    set(x, y){
+    set(x, y) {
         this.x = x;
         this.y = y;
     }
 }
 
-export const lerp = (start, end, amt) => {
+const lerp = (start, end, amt) => {
   return ((1-amt)*start+(amt*end));
 }
 
-export class Matrix {
+class Matrix {
     constructor() {
         this.grid = [];
     }
@@ -33,4 +33,10 @@ export class Matrix {
         }
         this.grid[x][y] = value;
     }
+}
+
+module.exports = {
+    Vec2,
+    lerp,
+    Matrix
 }

@@ -1,9 +1,7 @@
-import { Vec2 } from './util.js';
-import * as PIXI from "pixi.js";
-
+const { Vec2 } = require('./util.js');
 const physics = require('./physics.js');
 
-export class Trait {
+class Trait {
     constructor(name) {
         this.NAME = name;
     }
@@ -13,7 +11,7 @@ export class Trait {
     }
 }
 
-export class Entity {
+class Entity {
     constructor(width=0, height=0) {
         this.pos = new Vec2(0,0);
         this.spawnPoint = new Vec2(0,0);
@@ -21,9 +19,6 @@ export class Entity {
 
         this.bounds = new physics.BoundingBox(this.pos, new Vec2(width, height), new Vec2(0,0));
         this.attackBounds = new physics.BoundingBox(new Vec2(-width,-height), new Vec2(width*1.25, height), new Vec2(width*1.25,0));
-
-        this.hpBar = PIXI.Sprite.from(PIXI.Texture.WHITE);
-        this.hpFill= PIXI.Sprite.from(PIXI.Texture.WHITE);
 
         this.width = width;
         this.height = height;
@@ -71,7 +66,6 @@ export class Entity {
             trait.update(this, delta);
         });
 
-        this.animate(delta);
         this.getDirection(delta);
         this.hp = Math.max(this.hp,0);
     }
@@ -103,12 +97,6 @@ export class Entity {
         }
     }
 
-    drawHP(app) {
-        app.stage.addChild(this.hpBar.hpBorder);
-        app.stage.addChild(this.hpBar.hpBar);
-        app.stage.addChild(this.hpBar.hpFill);
-    }
-
     getImpactVelocity() {
         return 500;
     }
@@ -132,3 +120,5 @@ export class Entity {
         this.skelDir = Math.min(Math.max(this.skelDir, -1), 1);
     }
 }
+
+module.exports = { Trait, Entity };

@@ -5,7 +5,7 @@ import { Game, OnlineGame } from './Game.js';
 function App() {
   return (
     <div className="App">
-      <Game />
+      <OnlineGame />
     </div>
   );
 }

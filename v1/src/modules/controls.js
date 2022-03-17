@@ -109,13 +109,13 @@ export function bindKeysServer(player, keyboard, window, socket) {
     });
 
     keyboard.addMapping(D, keyState => {
-        socket.emit('move', 'right');
         player.run.dir += keyState ? 1 : -1;
+        socket.emit('move', player.run.dir);
     });
 
     keyboard.addMapping(A, keyState => {
-        socket.emit('move', 'left');
         player.run.dir += keyState ? -1 : 1;
+        socket.emit('move', player.run.dir);
     });
 
     keyboard.listenTo(window);

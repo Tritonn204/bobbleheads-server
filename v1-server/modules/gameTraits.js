@@ -1,19 +1,17 @@
-import { Trait } from './entity.js';
-import * as PIXI from "pixi.js";
-
+const { Trait } = require('./entity.js');
 const physics = require("./physics.js");
 
-export class Velocity extends Trait {
+class Velocity extends Trait {
     constructor() {
         super('velocity');
     }
 
     update() {
-
+        
     }
 }
 
-export class Run extends Trait {
+class Run extends Trait {
     constructor() {
         super('run');
 
@@ -46,42 +44,7 @@ export class Run extends Trait {
     }
 }
 
-export class HPBar extends Trait {
-    constructor() {
-        super('hpBar')
-        this.hpBorder = PIXI.Sprite.from(PIXI.Texture.WHITE);
-        this.hpBar = PIXI.Sprite.from(PIXI.Texture.WHITE);
-        this.hpFill = PIXI.Sprite.from(PIXI.Texture.WHITE);
-    }
-    render(entity, cam) {
-        this.hpBorder.position.set(
-            (entity.pos.x + entity.width/2 - cam.pos.x - 52)*cam.scale,
-            (entity.pos.y - cam.pos.y - 77)*cam.scale);
-        this.hpBorder.width = 104*cam.scale;
-        this.hpBorder.height = 14*cam.scale;
-        this.hpBorder.tint = 0x000000;
-
-        this.hpBar.position.set(
-            (entity.pos.x + entity.width/2 - cam.pos.x - 50)*cam.scale,
-            (entity.pos.y - cam.pos.y - 75)*cam.scale);
-        this.hpBar.width = 100*cam.scale;
-        this.hpBar.height = 10*cam.scale;
-        this.hpBar.tint = 0xFF0000;
-
-        this.hpFill.position.set(
-            (entity.pos.x + entity.width/2 - cam.pos.x - 50)*cam.scale,
-            (entity.pos.y - cam.pos.y - 75)*cam.scale);
-        this.hpFill.width = 100*(entity.hp/entity.baseHP)*cam.scale;
-        this.hpFill.height = 10*cam.scale;
-        this.hpFill.tint = 0x048F3E;
-    }
-
-    update() {
-
-    }
-}
-
-export class Punch extends Trait {
+class Punch extends Trait {
     constructor() {
         super('punch');
 
@@ -161,7 +124,7 @@ export class Punch extends Trait {
     }
 }
 
-export class Jump extends Trait {
+class Jump extends Trait {
     constructor() {
         super('jump');
 
@@ -185,3 +148,5 @@ export class Jump extends Trait {
         }
     }
 }
+
+module.exports = { Velocity, Jump, Run, Punch };

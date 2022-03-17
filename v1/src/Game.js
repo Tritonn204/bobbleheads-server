@@ -33,7 +33,6 @@ const baseHeight = 1080;
 //Game Loop & logic for single player
 export function Game() {
     const [response, setResponse] = useState("");
-    const socketRef = useRef();
 
     //Canvas/Screen Buffer
     const screenRef = useRef();
@@ -156,7 +155,7 @@ export function Game() {
 //Game loop & logic for multiplayer
 export function OnlineGame() {
     const [response, setResponse] = useState("");
-    const socketRef = useRef();
+    const [server, newServer] = useState(socketIOClient(ENDPOINT));
 
     //Canvas/Screen Buffer
     const screenRef = useRef();
@@ -183,22 +182,6 @@ export function OnlineGame() {
       return scaler;
     }
 
-    const connectToServer = (serverState) => {
-        try {
-            socketRef.current = socketIOClient(ENDPOINT);
-            socketRef.current.on = ('remoteData', data => {
-                serverState.remoteData = data;
-            });
-        }catch(e){
-            console.log(e);
-        }
-        //Cleanup on dismount
-        return () => {
-            if (socketRef)
-                socketRef.current.disconnect();
-        }
-    }
-
     const animation = (app) => {
         var spineLoaderOptions = { metadata: { spineSkeletonScale: 1 } };
         app.loader.add('playerSkel','res/avatars/Game Ready/Bobbleheads.json', spineLoaderOptions);
@@ -210,12 +193,68 @@ export function OnlineGame() {
         return res;
     }
 
+    const initPlayerOnServer = (entity) => {
+        const data = {
+            hp: entity.hp,
+            skeleton: 0,
+            pos: entity.pos,
+            vel: entity.vel,
+            command: entity.command,
+            heading: entity.heading,
+            pb: entity.pb,
+            dir: entity.dir,
+        }
+        server.emit('init', data);
+    }
+
+    const checkForPlayers = (app, level, socket, serverState) => {
+        server.on('addPlayer', data => {
+            if (!serverState.players[data.id]) {
+                createChar(data.skeleton).then((player) => {
+                    newPlayer(app, level, player);
+                    serverState.players[data.id] = player;
+                });
+            }
+        });
+
+        server.on('deletePlayer', data => {
+            if (serverState.players[data.id]) {
+                const player = serverState.players[data.id];
+                player.destroy();
+                level.entities.delete(player);
+                serverState.players[data.id] = null;
+            }
+        });
+
+        server.on('remoteData', data => {
+            serverState.remoteData = data;
+            serverState.remoteData.forEach(userData => {
+                if (!serverState.players[userData.id]) {
+                    serverState.players[userData.id] = {};
+                    createChar(userData.skeleton).then((player) => {
+                        newPlayer(app, level, player);
+                        player.pos.set(userData.pos.x, userData.pos.y)
+                        serverState.players[userData.id] = player;
+                    });
+                }
+            })
+        });
+    }
+
+    const newPlayer = (app, level, player) => {
+        console.log(app.loader.resources);
+        const bh = createSkeleton(app, app.loader.resources);
+        animationManager.bobbleheadMix(bh);
+        player.skeleton = bh;
+
+        player.drawHP(app);
+
+        level.entities.add(player);
+        level.addInteractiveEntity(player);
+    }
+
     //Initializes game on page load, after fetching required data from the server
     useEffect(() => {
-
-        const serverState = new Remote();
-        connectToServer(serverState);
-
         const app = new PIXI.Application({
           width: window.innerWidth,
           height: window.innerHeight,
@@ -223,6 +262,8 @@ export function OnlineGame() {
           backgroundColor: 0x87CEEB,
           antialias: true
         });
+
+        const serverState = new Remote();
 
         const loadMap = assetManager.loadLevel(app, 1);
 
@@ -234,14 +275,20 @@ export function OnlineGame() {
 
         app.loader.load((loader, resources) => {
             const bh = createSkeleton(app, resources);
-            const dummy = createSkeleton(app, resources);
+            //const dummy = createSkeleton(app, resources);
             animationManager.bobbleheadMix(bh);
-            animationManager.bobbleheadMix(dummy);
+            //animationManager.bobbleheadMix(dummy);
 
-            Promise.all([loadMap,createChar(0), createChar(0)])
-                .then(([map, char, prop]) => {
+            Promise.all([loadMap,createChar(0)])
+                .then(([map, char]) => {
+                    serverState.players[server.id] = char;
                     char.skeleton = bh;
-                    prop.skeleton = dummy;
+                    server.emit('loadLevel', {
+                        data: map.data
+                    })
+                    //prop.skeleton = dummy;
+
+                    initPlayerOnServer(char);
 
                     //Loads keyboard handling logic
                     const input = new Keyboard();
@@ -250,16 +297,18 @@ export function OnlineGame() {
                     let delta = 1/60;
 
                     //Defines keybinds
-                    bindKeysServer(char,input,window, socketRef.current);
+                    bindKeysServer(char,input,window, server);
+
 
                     map.entities.add(char);
-                    map.entities.add(prop);
+                    //map.entities.add(prop);
 
                     char.drawHP(app);
-                    prop.drawHP(app);
+                    //prop.drawHP(app);
 
                     map.addInteractiveEntity(char);
-                    map.addInteractiveEntity(prop);
+                    //map.addInteractiveEntity(prop);
+                    checkForPlayers(app, map, server, serverState);
 
                     //Define the game loop update/render logic
                     const update = (time) => {
@@ -286,6 +335,12 @@ export function OnlineGame() {
                      gameLoop.current = requestAnimationFrame(update);
                 });
         });
+
+        //Cleanup on dismount
+        return () => {
+            if (server)
+                server.disconnect();
+        }
     }, []);
 
     return (
