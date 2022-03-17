@@ -81,7 +81,7 @@ io.on("connection", socket => {
 });
 
 const newPlayer = (data, socket) => {
-    const player = entities.createChar(socket.id);
+    const player = entities.createChar(socket);
     players[socket.id] = player;
     player.pos = data.pos;
     player.vel = data.vel;
