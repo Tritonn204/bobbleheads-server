@@ -18,7 +18,7 @@ export class Run extends Trait {
         super('run');
 
         this.dir = 0;
-        this.acc = 450;
+        this.acc = 525;
         this.speed = 650;
         this.walkSpeed = 128;
     }

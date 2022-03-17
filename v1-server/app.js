@@ -35,12 +35,14 @@ io.on("connection", socket => {
         socket.userData.vel = data.vel;
         socket.userData.heading = data.h;
         socket.userData.pb = data.pb;
-        socket.userData.input = '';
+        socket.userData.command = null;
     });
 
     socket.on('input', data => {
-        socket.userData.input = data.input;
+        const button = data.key;
+        socket.userData.command = data.key;
     })
+
 
     //Handle removing players from client worlds
     socket.on("disconnect", () => {
@@ -67,12 +69,13 @@ setInterval(() => {
                 skeleton: socket.userData.skeleton,
                 pos: socket.userData.pos,
                 vel: socket.userData.vel,
-                input: socket.userData.input,
+                command: socket.userData.command,
                 heading: socket.userData.heading,
                 pb: socket.userData.pb,
             })
         }
     }
+    if (pack.length > 0) io.emit('remoteData', pack);
 }, interval);
 
 server.listen(port, () => console.log(`Listening on port ${port}`));

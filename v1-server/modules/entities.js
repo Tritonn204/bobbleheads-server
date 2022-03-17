@@ -25,11 +25,6 @@ export function createChar(index) {
         char.addTrait(new Punch());
         char.addTrait(new HPBar());
 
-        char.render = (cam) => {
-            char.hpBar.render(char, cam);
-            return tileUtil.drawSpine(char, 'Idle Left', cam, char.pos.x, char.pos.y);
-        }
-
         char.animate = () => {
             const movementX = Math.abs(char.vel.x);
             const playing = char.currentAnimation;

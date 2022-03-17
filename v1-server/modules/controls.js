@@ -11,14 +11,17 @@ const LEFT = 37;
 const DOWN = 40;
 const UP = 38;
 
-export function bindKeys(player, keyboard, window) {
+export function handleKeys(socket) {
     keyboard.addMapping(W, keyState => {
-        if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
-            player.jump.start();
-            player.isGrounded = false;
-        } else {
-            player.jump.cancel();
-        }
+        socket.on('jump', data => {
+            if (data == 'start'){
+                player.jump.start();
+                player.isGrounded = false;
+            }
+            if (data == 'end'){
+                player.jump.cancel();
+            }
+        })
     });
 
     keyboard.addMapping(SPACE, keyState => {

@@ -1,6 +1,6 @@
 import logo from './logo.svg';
 import './App.css';
-import Game from './Game.js';
+import { Game, OnlineGame } from './Game.js';
 
 function App() {
   return (
