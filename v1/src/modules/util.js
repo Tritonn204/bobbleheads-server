@@ -4,9 +4,14 @@ export class Vec2 {
         this.y = y;
     }
 
-    set(x, y){
+    set(x, y) {
         this.x = x;
         this.y = y;
+    }
+
+    lerp(vec, amt) {
+        this.x = (1-amt)*this.x+(amt*vec.x);
+        this.y = (1-amt)*this.y+(amt*vec.y);
     }
 }
 

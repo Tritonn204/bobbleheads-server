@@ -7,7 +7,7 @@ class Velocity extends Trait {
     }
 
     update() {
-        
+
     }
 }
 

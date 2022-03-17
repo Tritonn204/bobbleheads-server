@@ -75,7 +75,7 @@ export class Level {
         this.entityCollision.entities.add(entity);
     }
 
-    update(delta) {
+    update(delta, serverState) {
         this.entities.forEach((entity) => {
             entity.update(delta);
             entity.vel.y += physics.gravity*delta;
@@ -90,7 +90,18 @@ export class Level {
             this.entityCollision.checkAttack(entity);
 
             if (entity.vel.y > physics.terminalVelocity)
-                entity.vel.y = physics.terminalVelocity;
+            entity.vel.y = physics.terminalVelocity;
+
+            if(serverState.remoteData && serverState.remoteData[entity.id]){
+                const lerpFactor = Math.min(1,(Date.now() - serverState.lastUpdate)/(delta*1000)*0.125);
+                const remotePlayer = serverState.remoteData[entity.id];
+
+                entity.pos.lerp(remotePlayer.pos, lerpFactor);
+                entity.vel.lerp(remotePlayer.vel, lerpFactor);
+
+                entity.facing = remotePlayer.facing;
+                entity.isGrounded = remotePlayer.grounded;
+            }
         });
     }
 

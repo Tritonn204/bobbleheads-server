@@ -24,7 +24,7 @@ const loader = PIXI.Loader.shared;
 
 
 //SERVER URL
-const ENDPOINT = "http://127.0.0.1:4001";
+const ENDPOINT = "http://8a7b-2604-3d09-a880-b800-2842-325a-84ca-8350.ngrok.io";
 
 //Scaling Settings
 const baseWidth = 1920;
@@ -207,10 +207,10 @@ export function OnlineGame() {
         server.emit('init', data);
     }
 
-    const checkForPlayers = (app, level, socket, serverState) => {
+    const checkForPlayers = (app, char, level, socket, serverState) => {
         server.on('addPlayer', data => {
             if (!serverState.players[data.id]) {
-                createChar(data.skeleton).then((player) => {
+                createChar(data.skeleton, data.id, socket, false, serverState).then((player) => {
                     newPlayer(app, level, player);
                     serverState.players[data.id] = player;
                 });
@@ -228,13 +228,16 @@ export function OnlineGame() {
 
         server.on('remoteData', data => {
             serverState.remoteData = data;
-            serverState.remoteData.forEach(userData => {
-                if (!serverState.players[userData.id]) {
-                    serverState.players[userData.id] = {};
-                    createChar(userData.skeleton).then((player) => {
+            serverState.lastUpdate = Date.now();
+            Object.entries(serverState.remoteData).forEach((item) => {
+                const key = item[0];
+                const userData = item[1];
+                if (!serverState.players[key]) {
+                    serverState.players[key] = {};
+                    createChar(userData.skeleton, key, server, false, serverState).then((player) => {
                         newPlayer(app, level, player);
                         player.pos.set(userData.pos.x, userData.pos.y)
-                        serverState.players[userData.id] = player;
+                        serverState.players[key] = player;
                     });
                 }
             })
@@ -242,7 +245,6 @@ export function OnlineGame() {
     }
 
     const newPlayer = (app, level, player) => {
-        console.log(app.loader.resources);
         const bh = createSkeleton(app, app.loader.resources);
         animationManager.bobbleheadMix(bh);
         player.skeleton = bh;
@@ -279,7 +281,7 @@ export function OnlineGame() {
             animationManager.bobbleheadMix(bh);
             //animationManager.bobbleheadMix(dummy);
 
-            Promise.all([loadMap,createChar(0)])
+            Promise.all([loadMap,createChar(0, server.id, server, serverState, true)])
                 .then(([map, char]) => {
                     serverState.players[server.id] = char;
                     char.skeleton = bh;
@@ -308,7 +310,7 @@ export function OnlineGame() {
 
                     map.addInteractiveEntity(char);
                     //map.addInteractiveEntity(prop);
-                    checkForPlayers(app, map, server, serverState);
+                    checkForPlayers(app, char, map, server, serverState);
 
                     //Define the game loop update/render logic
                     const update = (time) => {
@@ -327,11 +329,11 @@ export function OnlineGame() {
                                 SCALE
                              );
                              c.update(char, map, delta);
-                             map.update(delta);
+                             map.update(delta, serverState);
                              accumulatedTime -= delta;
                          }
                          gameLoop.current = requestAnimationFrame(update);
-                         }
+                     }
                      gameLoop.current = requestAnimationFrame(update);
                 });
         });

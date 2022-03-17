@@ -1,45 +1,61 @@
-//Key state constants
-const PRESSED = 1;
-const RELEASED = 0;
+const physics = require('./physics.js');
 
-export class Keyboard {
-    constructor() {
-        // Stores the current state of any key
-        this.keyStates = new Map();
+//Javascript key codes
+const SPACE = 32;
+const W = 87;
+const A = 65;
+const S = 83;
+const D = 68;
+const RIGHT = 39;
+const LEFT = 37;
+const DOWN = 40;
+const UP = 38;
 
-        // Stores the callback event for a given key code
-        this.keyMap = new Map();
-    }
-
-    addMapping(keyCode, callback) {
-        this.keyMap.set(keyCode, callback);
-    }
-
-    handleEvent(e) {
-        const {keyCode} = e;
-        if (!this.keyMap.has(keyCode)) {
-            //Key has no binding
-            return false;
+function input(player, socket) {
+    socket.on('jump', keyState => {
+        if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
+            player.jump.start();
+            player.isGrounded = false;
+        } else {
+            player.jump.cancel();
         }
+    });
 
-        e.preventDefault();
-
-        const keyState = e.type === 'keydown' ? PRESSED : RELEASED;
-
-        if (this.keyStates.get(keyCode) === keyState) {
-            return;
+    // keyboard.addMapping(SPACE, keyState => {
+    //     if (keyState) {
+    //         player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
+    //         player.vel.set(0,0);
+    //     }
+    // });
+    //
+    socket.on('crouch', keyState => {
+        if (keyState == 1) {
+            player.crouching = true;
+        } else {
+            player.crouching = false;
         }
+    });
+    //
+    // keyboard.addMapping(RIGHT, keyState => {
+    //     if (keyState) {
+    //         player.punch.advance();
+    //     }
+    // });
+    //
+    socket.on('guard', keyState => {
+        if (keyState == 1) {
+            player.guard = true;
+        } else {
+            player.guard = false;
+        }
+    });
 
-        this.keyStates.set(keyCode, keyState);
-
-        this.keyMap.get(keyCode)(keyState);
-    }
-
-    listenTo(client) {
-        ['keydown', 'keyup'].forEach(eventName => {
-            client.addEventListener(eventName, e => {
-                this.handleEvent(e);
-            });
-        });
-    }
+    socket.on('move right', keyState => {
+        player.run.dir += keyState ? 1 : -1;
+    });
+    socket.on('move left', keyState => {
+        player.run.dir += keyState ? -1 : 1;
+    });
 }
+
+module.exports = input;

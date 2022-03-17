@@ -63,14 +63,13 @@ export function bindKeys(player, keyboard, window) {
 
 export function bindKeysServer(player, keyboard, window, socket) {
     keyboard.addMapping(W, keyState => {
-        if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
-            socket.emit('jump', 'start');
-            player.jump.start();
-            player.isGrounded = false;
-        } else {
-            socket.emit('jump', 'end');
-            player.jump.cancel();
-        }
+        socket.emit('jump', keyState);
+        // if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
+        //     player.jump.start();
+        //     player.isGrounded = false;
+        // } else {
+        //     player.jump.cancel();
+        // }
     });
 
     keyboard.addMapping(SPACE, keyState => {
@@ -83,12 +82,11 @@ export function bindKeysServer(player, keyboard, window, socket) {
 
     keyboard.addMapping(S, keyState => {
         if (keyState == 1) {
-            socket.emit('crouch', true);
             player.crouching = true;
         } else {
-            socket.emit('crouch', false);
             player.crouching = false;
         }
+        socket.emit('crouch', keyState);
     });
 
     keyboard.addMapping(RIGHT, keyState => {
@@ -100,22 +98,21 @@ export function bindKeysServer(player, keyboard, window, socket) {
 
     keyboard.addMapping(DOWN, keyState => {
         if (keyState == 1) {
-            socket.emit('guard', true);
             player.guard = true;
         } else {
-            socket.emit('guard', false);
             player.guard = false;
         }
+        socket.emit('guard', keyState);
     });
 
     keyboard.addMapping(D, keyState => {
         player.run.dir += keyState ? 1 : -1;
-        socket.emit('move', player.run.dir);
+        socket.emit('move right', keyState);
     });
 
     keyboard.addMapping(A, keyState => {
         player.run.dir += keyState ? -1 : 1;
-        socket.emit('move', player.run.dir);
+        socket.emit('move left', keyState);
     });
 
     keyboard.listenTo(window);

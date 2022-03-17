@@ -47,7 +47,6 @@ class Level {
     }
 
     loadCollisionData() {
-        console.log(this.data);
         this.data.layers.forEach(layer => {
             if (layer.name.includes('collision')){
                 layer.positions.forEach(tile => {
