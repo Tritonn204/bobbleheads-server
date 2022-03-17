@@ -108,10 +108,6 @@ class Entity {
                 }
             }
             this.hurtTime = 0;
-            if (this.socket){
-                socket.emit('hurt', null);
-                socket.broadcast.emit('hurt', null);
-            }
         }
     }
 
