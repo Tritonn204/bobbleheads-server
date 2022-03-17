@@ -23,6 +23,8 @@ export class Level {
         this.width = 0;
         this.height = 0;
 
+        this.clientSnapTimer = 0;
+
         this.entityCollision = new EntityCollider(this.entities);
         this.tileCollision = new TileCollider(this.collisionData);
     }
@@ -76,32 +78,31 @@ export class Level {
     }
 
     update(delta, serverState) {
+        this.clientSnapTimer += delta;
         this.entities.forEach((entity) => {
-            entity.update(delta);
-            entity.vel.y += physics.gravity*delta;
 
-            entity.pos.x += entity.vel.x*delta
-            this.tileCollision.checkX(entity);
-
-            entity.pos.y += entity.vel.y*delta;
-            this.tileCollision.checkY(entity);
-
-            this.entityCollision.check(entity);
-            this.entityCollision.checkAttack(entity);
-
-            if (entity.vel.y > physics.terminalVelocity)
-            entity.vel.y = physics.terminalVelocity;
-
+            //
             if(serverState.remoteData && serverState.remoteData[entity.id]){
-                const lerpFactor = Math.min(1,(Date.now() - serverState.lastUpdate)/(delta*1000)*0.125);
+                //Grab most up to date player data
                 const remotePlayer = serverState.remoteData[entity.id];
+                //Snap velocity vectors to server-side values
+                entity.vel.set(remotePlayer.vel.x, remotePlayer.vel.y);
 
+                //interpolate between the client position and the server position based on how much time has passed
+                const lerpFactor = Math.min(1,(Date.now() - serverState.lastUpdate)/(delta*1000)*0.125);
                 entity.pos.lerp(remotePlayer.pos, lerpFactor);
-                entity.vel.lerp(remotePlayer.vel, lerpFactor);
 
+                //Make sure other players face the proper direction
                 entity.facing = remotePlayer.facing;
                 entity.isGrounded = remotePlayer.grounded;
+                entity.hurtTime = remotePlayer.hurtTime;
+                entity.hitSource = remotePlayer.hitSource;
             }
+
+            //predict entity movement for a visibly smoother client, avoid jitters/snaps
+            entity.update(delta, serverState);
+            entity.pos.x += entity.vel.x*delta
+            entity.pos.y += entity.vel.y*delta;
         });
     }
 

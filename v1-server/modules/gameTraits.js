@@ -45,7 +45,7 @@ class Run extends Trait {
 }
 
 class Punch extends Trait {
-    constructor() {
+    constructor(socket) {
         super('punch');
 
         this.duration = 0.5;

@@ -4,10 +4,11 @@ const { Velocity, Jump, Run, Punch } = require ('./gameTraits.js');
 const physics = require("./physics.js");
 
 //Create a fighter and initialize it's global physics properties
-function createChar(id) {
+function createChar(socket) {
     const char = new Entity(63,109);
 
-    char.id = id;
+    char.id = socket.id;
+    char.socket = socket;
     char.skelWidth=180;
     char.skelHeight=180;
     char.flipX = true;

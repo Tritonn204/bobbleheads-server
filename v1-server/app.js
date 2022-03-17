@@ -11,7 +11,7 @@ const port = process.env.PORT || 4001;
 const index = require("./routes/index");
 
 const interval = 1000/25; //Server broadcast rate
-const delta = 1000/80; //Server physics frame rate
+const delta = 1000/60; //Server physics frame rate
 
 
 //slight change
@@ -27,7 +27,7 @@ const players = {};
 const io = new socketIo.Server(server, {
     cors: {
         origin: [
-            "https://youthful-keller-2f50ca.netlify.app/",
+            "https://youthful-keller-2f50ca.netlify.app",
             "http://localhost:3000"
         ],
         methods: ["GET", "POST"]
@@ -81,7 +81,7 @@ io.on("connection", socket => {
 });
 
 const newPlayer = (data, socket) => {
-    const player = entities.createChar(socket.id);
+    const player = entities.createChar(socket);
     players[socket.id] = player;
     player.pos = data.pos;
     player.vel = data.vel;
@@ -106,13 +106,17 @@ setInterval(() => {
                 pb: socket.userData.pb,
                 facing: players[ID].facing,
                 grounded: players[ID].isGrounded,
-                animation: socket.userData.animation
+                animation: socket.userData.animation,
+                hurtTime: players[ID].hurtTime,
+                hitSource: players[ID].hitSource,
             }
         }
     }
 
     if (Object.keys(pack).length > 0) io.emit('remoteData', pack);
 }, interval);
+
+
 
 let lastTime = Date.now();
 let accumulatedTime = 0;

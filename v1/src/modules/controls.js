@@ -74,10 +74,10 @@ export function bindKeysServer(player, keyboard, window, socket) {
 
     keyboard.addMapping(SPACE, keyState => {
         if (keyState) {
-            socket.emit('respawn');
             player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
             player.vel.set(0,0);
         }
+        socket.emit('respawn', keyState);
     });
 
     keyboard.addMapping(S, keyState => {
@@ -91,9 +91,9 @@ export function bindKeysServer(player, keyboard, window, socket) {
 
     keyboard.addMapping(RIGHT, keyState => {
         if (keyState) {
-            socket.emit('punch', 'advance');
             player.punch.advance();
         }
+        socket.emit('punch', keyState);
     });
 
     keyboard.addMapping(DOWN, keyState => {

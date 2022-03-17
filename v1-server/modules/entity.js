@@ -75,7 +75,16 @@ class Entity {
     }
 
     hit(cantidate) {
-
+        if (this.punch){
+            const dir = cantidate.pos.x > this.pos.x ? 1 : -1;
+            this.hitSource = dir;
+            if (this.punch.index == 2) {
+                this.ragdoll = true;
+                this.isGrounded = false;
+                this.vel.x = this.getImpactVelocity()*dir/2;
+                this.vel.y = -500;
+            }
+        }
     }
 
     hurt(cantidate) {
@@ -88,9 +97,14 @@ class Entity {
                     this.hp -= 50;
                     this.ragdoll = true;
                     this.isGrounded = false;
-                    this.vel.x = this.getImpactVelocity()*dir;
+                    this.vel.x = this.getImpactVelocity()*cantidate.facing;
                     this.vel.y = -800;
                     console.log("Took hit from", cantidate);
+                } else {
+                    this.ragdoll = true;
+                    this.isGrounded = false;
+                    this.vel.x = cantidate.facing*this.getImpactVelocity()/2;
+                    this.vel.y = -250;
                 }
             }
             this.hurtTime = 0;

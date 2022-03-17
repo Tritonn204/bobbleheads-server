@@ -60,7 +60,7 @@ export class Entity {
         this[trait.NAME] = trait;
     }
 
-    update(delta) {
+    update(delta, serverState) {
         if (this.isGrounded && this.vel.y == 0)
             this.ragdoll = false;
 
@@ -70,6 +70,10 @@ export class Entity {
         this.traits.forEach(trait => {
             trait.update(this, delta);
         });
+
+        if(serverState.remoteData && serverState.remoteData[this.id]){
+            this.hp = serverState.remoteData[this.id].hp;
+        }
 
         this.animate(delta);
         this.getDirection(delta);
