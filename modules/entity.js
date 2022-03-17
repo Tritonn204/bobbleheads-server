@@ -90,7 +90,6 @@ class Entity {
                     this.isGrounded = false;
                     this.vel.x = this.getImpactVelocity()*dir;
                     this.vel.y = -800;
-                    console.log("Took hit from", cantidate);
                 }
             }
             this.hurtTime = 0;

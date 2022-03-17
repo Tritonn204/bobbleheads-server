@@ -21,13 +21,13 @@ function input(player, socket) {
         }
     });
 
-    // keyboard.addMapping(SPACE, keyState => {
-    //     if (keyState) {
-    //         player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
-    //         player.vel.set(0,0);
-    //     }
-    // });
-    //
+    socket.on('respawn', keyState => {
+        if (keyState) {
+            player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
+            player.vel.set(0,0);
+        }
+    });
+
     socket.on('crouch', keyState => {
         if (keyState == 1) {
             player.crouching = true;
@@ -35,13 +35,13 @@ function input(player, socket) {
             player.crouching = false;
         }
     });
-    //
-    // keyboard.addMapping(RIGHT, keyState => {
-    //     if (keyState) {
-    //         player.punch.advance();
-    //     }
-    // });
-    //
+
+    socket.on('punch', keyState => {
+        if (keyState) {
+            player.punch.advance();
+        }
+    });
+
     socket.on('guard', keyState => {
         if (keyState == 1) {
             player.guard = true;
