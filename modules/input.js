@@ -21,12 +21,12 @@ function input(player, socket) {
         }
     });
 
-    socket.on('respawn', keyState => {
-        if (keyState) {
-            player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
-            player.vel.set(0,0);
-        }
-    });
+    // socket.on('respawn', keyState => {
+    //     if (keyState) {
+    //         player.pos.set(player.spawnPoint.x,player.spawnPoint.y);
+    //         player.vel.set(0,0);
+    //     }
+    // });
 
     socket.on('crouch', keyState => {
         if (keyState == 1) {
