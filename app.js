@@ -11,7 +11,7 @@ const port = process.env.PORT || 4001;
 const index = require("./routes/index");
 
 const interval = 1000/25; //Server broadcast rate
-const delta = 1000/80; //Server physics frame rate
+const delta = 1000/60; //Server physics frame rate
 
 
 //slight change
