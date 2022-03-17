@@ -13,6 +13,8 @@ const index = require("./routes/index");
 const interval = 1000/25; //Server broadcast rate
 const delta = 1000/80; //Server physics frame rate
 
+
+//slight change
 const app = express();
 app.use(index);
 
@@ -26,7 +28,7 @@ const io = new socketIo.Server(server, {
     cors: {
         origin: [
             "https://youthful-keller-2f50ca.netlify.app/",
-            "https://localhost:*"
+            "http://localhost:3000"
         ],
         methods: ["GET", "POST"]
     }
