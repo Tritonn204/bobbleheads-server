@@ -108,6 +108,7 @@ setInterval(() => {
                 grounded: players[ID].isGrounded,
                 animation: socket.userData.animation,
                 hurtTime: players[ID].hurtTime,
+                hitSource: players[ID].hitSource,
             }
         }
     }
