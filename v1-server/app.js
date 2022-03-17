@@ -24,14 +24,10 @@ const players = {};
 
 const io = new socketIo.Server(server, {
     cors: {
-        origin: function(origin, callback) {
-            if (origin.includes("localhost")){
-                callback(null, true);
-            }
-            else {
-                callback(null, false);
-            }
-        },
+        origin: [
+            "https://youthful-keller-2f50ca.netlify.app/",
+            "https://localhost:*"
+        ],
         methods: ["GET", "POST"]
     }
 });

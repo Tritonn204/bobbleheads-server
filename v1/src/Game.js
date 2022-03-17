@@ -24,7 +24,7 @@ const loader = PIXI.Loader.shared;
 
 
 //SERVER URL
-const ENDPOINT = "http://8a7b-2604-3d09-a880-b800-2842-325a-84ca-8350.ngrok.io";
+const ENDPOINT = "https://d14b-2604-3d09-a880-b800-2842-325a-84ca-8350.ngrok.io";
 
 //Scaling Settings
 const baseWidth = 1920;
