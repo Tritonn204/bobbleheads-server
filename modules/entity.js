@@ -88,8 +88,14 @@ class Entity {
                     this.hp -= 50;
                     this.ragdoll = true;
                     this.isGrounded = false;
-                    this.vel.x = this.getImpactVelocity()*dir;
+                    this.vel.x = this.getImpactVelocity()*cantidate.facing;
                     this.vel.y = -800;
+                    console.log("Took hit from", cantidate);
+                } else {
+                    this.ragdoll = true;
+                    this.isGrounded = false;
+                    this.vel.x = cantidate.facing*this.getImpactVelocity()/2;
+                    this.vel.y = -250;
                 }
             }
             this.hurtTime = 0;
