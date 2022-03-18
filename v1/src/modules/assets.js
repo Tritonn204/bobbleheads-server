@@ -33,7 +33,7 @@ export function loadLevelAssets(index) {
     });
 }
 
-export function loadLevel(app, index) {
+export function loadLevel(app, container, index) {
     return Promise.all([
         fetch('res/levels/' + index + '/' + index + '.txt')
         .then(r => r.json()),
@@ -53,7 +53,7 @@ export function loadLevel(app, index) {
 
         //Store level data in memory
         level.loadTextureData();
-        level.loadTileData(app.stage);
+        level.loadTileData(container);
         level.loadCollisionData();
 
         return level;

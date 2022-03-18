@@ -34,11 +34,13 @@ const io = new socketIo.Server(server, {
     }
 });
 
+//Called upon establishment of a new collection
 io.on("connection", socket => {
     //Default Values per player instance
     socket.userData = { pos: new Vec2(0,0), vel: new Vec2(0,0), heading: 0, dir: 0 };
     console.log(`${socket.id} connected`);
 
+    //Initializes server framework for storing a player state
     socket.on('init', data => {
         socket.userData.skeleton = data.skeleton;
         socket.userData.hp = data.hp;
@@ -59,6 +61,13 @@ io.on("connection", socket => {
         });
     });
 
+    //Triggers client callback for latency calculation upon ping requests
+    socket.on("ping", (cb) => {
+        if (typeof cb === "function")
+          cb();
+    });
+
+    //Mirror player animations from client
     socket.on('animation', data => {
         socket.userData.animation = data;
     });
@@ -73,6 +82,7 @@ io.on("connection", socket => {
         console.log(msg);
     });
 
+    //Loads map data server-side upon room creation
     socket.on("loadLevel", levelData => {
         if (level.data) return;
         level.data = levelData.data;
@@ -80,6 +90,7 @@ io.on("connection", socket => {
     })
 });
 
+//Add a new player entity to the server state for authoratative physics
 const newPlayer = (data, socket) => {
     const player = entities.createChar(socket);
     players[socket.id] = player;
@@ -90,6 +101,7 @@ const newPlayer = (data, socket) => {
     handleInput(player, socket);
 }
 
+//Create a packet for the server-side player data, and broadcast it at a set rate of 'interval' ms
 setInterval(() => {
     let pack = {};
 
@@ -116,8 +128,7 @@ setInterval(() => {
     if (Object.keys(pack).length > 0) io.emit('remoteData', pack);
 }, interval);
 
-
-
+//Server-side game loop, performs authoratative physics calculations at a set rate of 'delta' ms
 let lastTime = Date.now();
 let accumulatedTime = 0;
 
@@ -134,4 +145,5 @@ setInterval(() => {
     }
 }, delta);
 
+//Start server
 server.listen(port, () => console.log(`Listening on port ${port}`));

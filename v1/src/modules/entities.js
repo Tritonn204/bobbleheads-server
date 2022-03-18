@@ -31,6 +31,13 @@ export function createChar(index, id, socket, isClient, serverState) {
             return tileUtil.drawSpine(char, 'Idle Left', cam, char.pos.x, char.pos.y);
         }
 
+        char.draw = () => {
+            char.container.addChild(char.skeleton);
+            char.container.addChild(char.hpBar.hpBorder);
+            char.container.addChild(char.hpBar.hpBar);
+            char.container.addChild(char.hpBar.hpFill);
+        }
+
         char.animate = () => {
             if (isClient) {
                 const movementX = Math.abs(char.vel.x);

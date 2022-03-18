@@ -18,6 +18,7 @@ export class Entity {
         this.pos = new Vec2(0,0);
         this.spawnPoint = new Vec2(0,0);
         this.vel = new Vec2(0,0);
+        this.container = new PIXI.Container();
 
         this.bounds = new physics.BoundingBox(this.pos, new Vec2(width, height), new Vec2(0,0));
         this.attackBounds = new physics.BoundingBox(new Vec2(-width,-height), new Vec2(width*1.25, height), new Vec2(width*1.25,0));
@@ -85,10 +86,7 @@ export class Entity {
     }
 
     destroy() {
-        this.skeleton.destroy(true);
-        this.hpBar.hpBorder.destroy(true);
-        this.hpBar.hpBar.destroy(true);
-        this.hpBar.hpFill.destroy(true);
+        this.container.destroy(true);
     }
 
     hit(cantidate) {
@@ -128,10 +126,8 @@ export class Entity {
         }
     }
 
-    drawHP(app) {
-        app.stage.addChild(this.hpBar.hpBorder);
-        app.stage.addChild(this.hpBar.hpBar);
-        app.stage.addChild(this.hpBar.hpFill);
+    draw() {
+        
     }
 
     getImpactVelocity() {

@@ -106,7 +106,7 @@ export class Level {
         });
     }
 
-    loadTileData(app) {
+    loadTileData(container) {
         this.data.layers.forEach(layer => {
             if (!layer.name.includes('collision')){
                 layer.positions.forEach(tile => {
@@ -121,13 +121,13 @@ export class Level {
             this.bgTiles.grid.map((column, x) => {
                 column.map((tile, y) => {
                     tile.position.set(-this.tileSet.width,0);
-                    app.addChild(tile);
+                    container.addChild(tile);
                 });
             })
             this.tiles.grid.map((column, x) => {
                 column.map((tile, y) => {
                     tile.position.set(-this.tileSet.width,0);
-                    app.addChild(tile);
+                    container.addChild(tile);
                 });
             })
         });
