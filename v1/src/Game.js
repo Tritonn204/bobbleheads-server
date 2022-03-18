@@ -1,12 +1,12 @@
 import React from 'react';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useContext } from 'react';
 import useScript from './hooks/useScript.js';
-import socketIOClient from "socket.io-client";
 import Remote from './modules/remote.js';
 
 import PerformanceOverlay from './modules/benchmarkOverlay.js';
 
 import { Stage, Sprite, PixiComponent  } from '@inlet/react-pixi'
+import { ReferenceDataContext } from "./ReferenceDataContext";
 
 import { createChar } from './modules/entities.js';
 import Camera from './modules/camera.js';
@@ -23,12 +23,6 @@ const animationManager = require("./modules/animation.js");
 const layerManager = require("./modules/layers.js");
 
 const loader = PIXI.Loader.shared;
-
-const testWallet = '0x3e05c7FFfEfe9030523c1eb14E50ace5B0da9Cf7';
-
-//SERVER URL
-//const ENDPOINT = "https://bh-server-v1.herokuapp.com/";
-const ENDPOINT = "http://localhost:4001";
 
 //Scaling Settings
 const baseWidth = 1920;
@@ -158,7 +152,6 @@ export function Game() {
 //Game loop & logic for multiplayer
 export function OnlineGame() {
     const [response, setResponse] = useState("");
-    const [server, newServer] = useState(socketIOClient(ENDPOINT));
 
     //Canvas/Screen Buffer
     const screenRef = useRef();
@@ -173,6 +166,8 @@ export function OnlineGame() {
     const [latency, setLatency] = useState(0);
 
     const [camera, setCamera] = useState(new Camera());
+
+    const { server, currentAccount } = useContext(ReferenceDataContext);
 
     let gameLoop = useRef();
 
@@ -198,7 +193,6 @@ export function OnlineGame() {
 
     const initPlayerOnServer = (entity, serverState) => {
         const remotePlayer = serverState.initialData;
-        console.log(remotePlayer.facing);
         if (remotePlayer){
             entity.pos.set(remotePlayer.pos.x, remotePlayer.pos.y);
             entity.facing = remotePlayer.facing;
@@ -241,7 +235,7 @@ export function OnlineGame() {
             if(id){
                 server.emit('joinGame', {
                     id: id,
-                    wallet: testWallet
+                    wallet: currentAccount
                 });
             }
         })
@@ -250,7 +244,7 @@ export function OnlineGame() {
             //PLACE METAMASK TRANSACTION FOR CREATING MATCH HERE
             server.emit('joinGame', {
                 id: id,
-                wallet: testWallet
+                wallet: currentAccount
             });
         })
 
@@ -305,7 +299,7 @@ export function OnlineGame() {
     }
 
     //Initializes game on page load, after fetching required data from the server
-    useEffect(() => {
+    useEffect(async () => {
         const app = new PIXI.Application({
             width: window.innerWidth,
             height: window.innerHeight,
@@ -314,113 +308,103 @@ export function OnlineGame() {
             antialias: true,
         });
 
-        server.emit('setWallet', testWallet);
-        server.emit('getGameId', (id) => {
-            if(!id){
-                server.emit('requestGame', (id) => {
-                    serverState.gameId = id;
-                    server.emit('createGame', serverState.gameId);
-                });
-            } else {
-                serverState.gameId = id;
-                server.emit('joinGame', id);
-                server.emit('fetchData', (data) => {
-                    console.log(data);
-                    serverState.initialData = data;
-                });
-            }
-        })
-
-        const worldLayer = new PIXI.Container();
-        const entityLayer = new PIXI.Container();
-
-        const statsHud = new PerformanceOverlay();
-        beginPing(statsHud);
-
-        app.stage.addChild(worldLayer);
-        app.stage.addChild(entityLayer);
-        app.stage.addChild(statsHud.container);
-
         const serverState = new Remote();
 
-        const loadMap = assetManager.loadLevel(app, worldLayer, 1);
-        const c = new Camera();
+        server.emit('getGameId', (id) => {
+            serverState.gameId = id;
+            server.emit('fetchData', (data) => {
+                serverState.initialData = data;
+                const worldLayer = new PIXI.Container();
+                const entityLayer = new PIXI.Container();
 
-        document.body.appendChild(app.view);
+                const statsHud = new PerformanceOverlay(serverState.gameId);
+                beginPing(statsHud);
 
-        animation(app);
+                app.stage.addChild(worldLayer);
+                app.stage.addChild(entityLayer);
+                app.stage.addChild(statsHud.container);
 
-        app.loader.load((loader, resources) => {
-            const bh = createSkeleton(app, resources);
-            //const dummy = createSkeleton(app, resources);
-            animationManager.bobbleheadMix(bh);
-            //animationManager.bobbleheadMix(dummy);
+                const loadMap = assetManager.loadLevel(app, worldLayer, 1);
+                const c = new Camera();
 
-            Promise.all([loadMap,createChar(0, testWallet, server, serverState, true)])
-            .then(([map, char]) => {
-                entityLayer.addChild(char.container);
+                document.body.appendChild(app.view);
 
-                serverState.players[testWallet] = char;
-                char.skeleton = bh;
-                server.emit('loadLevel', {
-                    data: map.data,
-                    room: serverState.gameId
-                })
-                //prop.skeleton = dummy;
+                animation(app);
 
-                initPlayerOnServer(char, serverState);
+                app.loader.load((loader, resources) => {
+                    const bh = createSkeleton(app, resources);
+                    //const dummy = createSkeleton(app, resources);
+                    animationManager.bobbleheadMix(bh);
+                    //animationManager.bobbleheadMix(dummy);
 
-                //Loads keyboard handling logic
-                const input = new Keyboard();
-                let lastTime = 0;
-                let accumulatedTime = 0;
-                let delta = 1/60;
+                    Promise.all([loadMap,createChar(0, currentAccount, server, serverState, true)])
+                    .then(([map, char]) => {
+                        entityLayer.addChild(char.container);
 
-                //Defines keybinds
-                bindKeysServer(char,input,window, server);
+                        serverState.players[currentAccount] = char;
+                        char.skeleton = bh;
+                        server.emit('loadLevel', {
+                            data: map.data,
+                            room: serverState.gameId
+                        })
+                        //prop.skeleton = dummy;
+
+                        initPlayerOnServer(char, serverState);
+
+                        //Loads keyboard handling logic
+                        const input = new Keyboard();
+                        let lastTime = 0;
+                        let accumulatedTime = 0;
+                        let delta = 1/60;
+
+                        //Defines keybinds
+                        bindKeysServer(char,input,window, server);
 
 
-                map.entities.add(char);
-                //map.entities.add(prop);
+                        map.entities.add(char);
+                        //map.entities.add(prop);
 
-                char.draw();
-                //prop.drawHP(app);
+                        char.draw();
+                        //prop.drawHP(app);
 
-                map.addInteractiveEntity(char);
-                //map.addInteractiveEntity(prop);
-                checkForPlayers(app, entityLayer, char, map, server, serverState);
+                        map.addInteractiveEntity(char);
+                        //map.addInteractiveEntity(prop);
+                        checkForPlayers(app, entityLayer, char, map, server, serverState);
 
-                //Define the game loop update/render logic
-                const update = (time) => {
-                    map.render(c);
-                    statsHud.update((time - lastTime)/1000);
+                        //Define the game loop update/render logic
+                        const update = (time) => {
+                            map.render(c);
+                            statsHud.update((time - lastTime)/1000);
 
-                    //Compares real elapsed time with desired logic/physics framerate to maintain consistency
-                    //accumulatedTime marks how many seconds have passed since the last logic update
-                    accumulatedTime += (time - lastTime)/1000;
-                    lastTime = time;
+                            //Compares real elapsed time with desired logic/physics framerate to maintain consistency
+                            //accumulatedTime marks how many seconds have passed since the last logic update
+                            accumulatedTime += (time - lastTime)/1000;
+                            lastTime = time;
 
-                    while (accumulatedTime > delta) {
-                        const SCALE = getScale();
-                        c.setSize(
-                            window.innerWidth/SCALE,
-                            window.innerHeight/SCALE,
-                            SCALE
-                        );
-                        c.update(char, map, delta);
-                        map.update(delta, serverState);
-                        accumulatedTime -= delta;
-                    }
-                    gameLoop.current = requestAnimationFrame(update);
-                }
-                gameLoop.current = requestAnimationFrame(update);
+                            while (accumulatedTime > delta) {
+                                const SCALE = getScale();
+                                c.setSize(
+                                    window.innerWidth/SCALE,
+                                    window.innerHeight/SCALE,
+                                    SCALE
+                                );
+                                c.update(char, map, delta);
+                                map.update(delta, serverState);
+                                accumulatedTime -= delta;
+                            }
+                            gameLoop.current = requestAnimationFrame(update);
+                        }
+                        gameLoop.current = requestAnimationFrame(update);
+                    });
+                });
             });
-        });
+        })
 
         //Cleanup on dismount
         return () => {
             if (server)
             server.disconnect();
+            app.stage.destroy();
         }
     }, []);
 

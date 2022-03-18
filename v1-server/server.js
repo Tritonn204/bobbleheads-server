@@ -64,10 +64,15 @@ io.on("connection", socket => {
         const data = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
         if (typeof cb === "function")
         cb({
-            pos: data.pos,
-            vel: data.vel,
-            facing: data.facing,
+            pos: data ? data.pos : new Vec2(0,0),
+            vel: data ? data.vel : new Vec2(0,0),
+            facing: data ? data.facing : 1,
         });
+    })
+
+    socket.on('fetchMatches', cb => {
+        if (typeof cb === "function")
+        cb(JSON.stringify(liveMatches));
     })
 
     socket.on('createGame', gameId => {
@@ -77,14 +82,13 @@ io.on("connection", socket => {
         matches[gameId] = {};
         matches[gameId].level = new Level();
         matches[gameId].players = {};
-        liveMatches.push(matches[gameId]);
+        liveMatches.push(gameId);
 
         matches[gameId].sendPackets = startBroadcast(gameId);
         matches[gameId].update = startGameInstance(gameId);
     })
 
     socket.on('endGame', data => {
-        liveMatches.push(matches[data.room]);
         var filtered = liveMatches.filter(function(value, index, arr){
             if (value == matches[data.room]) liveMatches.splice(index, 1);
         });
@@ -96,11 +100,13 @@ io.on("connection", socket => {
 
     socket.on('joinGame', data => {
         socket.join(data);
+        matchIdsByWallet[socket.userData.wallet] = data;
     });
 
     socket.on('leaveGame', data => {
-        socket.leave(data.room);
-        matchIdsByWallet[data.wallet] = null;
+        socket.leave(data);
+        matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet] = null;
+        matchIdsByWallet[socket.userData.wallet] = null;
         socket.broadcast.emit('deletePlayer', { id: socket.userData.wallet });
     })
     //Initializes server framework for storing a player state
@@ -178,7 +184,8 @@ const startBroadcast = (room) => {
         const roster = await io.in(room).fetchSockets();
 
         for (const socket of roster) {
-            if (socket.userData.skeleton != undefined){
+            const ID = socket.userData.wallet;
+            if (socket.userData.skeleton != undefined && matches[room].players[ID]){
                 const ID = socket.userData.wallet;
                 pack[ID] = {
                     hp: matches[room].players[ID].hp,

@@ -2,7 +2,7 @@ import * as PIXI from "pixi.js";
 import { lerp } from './util.js';
 
 export default class PerformanceOverlay {
-    constructor() {
+    constructor(gameId) {
         this.container = new PIXI.Container();
         this.container.zIndex = 100;
 
@@ -11,9 +11,11 @@ export default class PerformanceOverlay {
 
         this.fpsText = new PIXI.Text('FPS:',{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
         this.latency = new PIXI.Text('PING: N/A' ,{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
+        this.roomID = new PIXI.Text('ROOM: #' + gameId ,{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
 
         this.lines.push(this.fpsText);
         this.lines.push(this.latency);
+        this.lines.push(this.roomID);
 
         this.lines.forEach((item, index) => {
             item.x = 16;
