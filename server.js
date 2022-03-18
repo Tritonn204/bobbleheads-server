@@ -30,7 +30,7 @@ const liveMatches = [];
 const io = new socketIo.Server(server, {
     cors: {
         origin: [
-            "https://youthful-keller-2f50ca.netlify.app/",
+            "https://youthful-keller-2f50ca.netlify.app",
             "http://localhost:3000"
         ],
         methods: ["GET", "POST"]
