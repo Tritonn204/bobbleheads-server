@@ -121,6 +121,7 @@ setInterval(() => {
                 animation: socket.userData.animation,
                 hurtTime: players[ID].hurtTime,
                 hitSource: players[ID].hitSource,
+                guard: players[ID].guard
             }
         }
     }
