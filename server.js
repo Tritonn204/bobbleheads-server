@@ -64,7 +64,7 @@ io.on("connection", socket => {
         const data = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
         if (typeof cb === "function")
         cb({
-            pos: data ? data.pos : new Vec2(0,0),
+            pos: data ? data.pos : new Vec2(640,0),
             vel: data ? data.vel : new Vec2(0,0),
             facing: data ? data.facing : 1,
         });
