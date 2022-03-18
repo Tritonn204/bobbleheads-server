@@ -10,7 +10,7 @@ export default class PerformanceOverlay {
         this.fps = 0;
 
         this.fpsText = new PIXI.Text('FPS:',{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
-        this.latency = new PIXI.Text('PING:' ,{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
+        this.latency = new PIXI.Text('PING: N/A' ,{fontFamily : 'Arial', fontSize: 24, fill : 0xffffff, align : 'left'});
 
         this.lines.push(this.fpsText);
         this.lines.push(this.latency);

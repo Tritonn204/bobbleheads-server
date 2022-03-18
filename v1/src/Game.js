@@ -24,9 +24,11 @@ const layerManager = require("./modules/layers.js");
 
 const loader = PIXI.Loader.shared;
 
+const testWallet = '0x3e05c7FFfEfe9030523c1eb14E50ace5B0da9Cf7';
 
 //SERVER URL
-const ENDPOINT = "https://bh-server-v1.herokuapp.com/";
+//const ENDPOINT = "https://bh-server-v1.herokuapp.com/";
+const ENDPOINT = "http://localhost:4001";
 
 //Scaling Settings
 const baseWidth = 1920;
@@ -194,7 +196,14 @@ export function OnlineGame() {
         return res;
     }
 
-    const initPlayerOnServer = (entity) => {
+    const initPlayerOnServer = (entity, serverState) => {
+        const remotePlayer = serverState.initialData;
+        console.log(remotePlayer.facing);
+        if (remotePlayer){
+            entity.pos.set(remotePlayer.pos.x, remotePlayer.pos.y);
+            entity.facing = remotePlayer.facing;
+        }
+
         const data = {
             hp: entity.hp,
             skeleton: 0,
@@ -204,6 +213,7 @@ export function OnlineGame() {
             heading: entity.heading,
             pb: entity.pb,
             dir: entity.dir,
+            facing: entity.facing,
         }
         server.emit('init', data);
     }
@@ -226,6 +236,30 @@ export function OnlineGame() {
                 serverState.players[data.id] = null;
             }
         });
+
+        server.on('gameId', id => {
+            if(id){
+                server.emit('joinGame', {
+                    id: id,
+                    wallet: testWallet
+                });
+            }
+        })
+
+        server.on('setGameId', id => {
+            //PLACE METAMASK TRANSACTION FOR CREATING MATCH HERE
+            server.emit('joinGame', {
+                id: id,
+                wallet: testWallet
+            });
+        })
+
+        server.on('leave', id => {
+            server.emit('leaveGame', {
+                id: id,
+                wallet: '0x3e05c7FFfEfe9030523c1eb14E50ace5B0da9Cf7'
+            })
+        })
 
         server.on('remoteData', data => {
             serverState.remoteData = data;
@@ -265,9 +299,9 @@ export function OnlineGame() {
             // volatile, so the packet will be discarded if the socket is not connected
             server.volatile.emit("ping", () => {
                 const PING = Date.now() - start;
-                stats.latency.text = 'PING: ' + PING;
+                stats.latency.text = 'PING: ' + PING + 'ms';
             });
-        }, 5000);
+        }, 2500);
     }
 
     //Initializes game on page load, after fetching required data from the server
@@ -279,6 +313,23 @@ export function OnlineGame() {
             backgroundColor: 0x87CEEB,
             antialias: true,
         });
+
+        server.emit('setWallet', testWallet);
+        server.emit('getGameId', (id) => {
+            if(!id){
+                server.emit('requestGame', (id) => {
+                    serverState.gameId = id;
+                    server.emit('createGame', serverState.gameId);
+                });
+            } else {
+                serverState.gameId = id;
+                server.emit('joinGame', id);
+                server.emit('fetchData', (data) => {
+                    console.log(data);
+                    serverState.initialData = data;
+                });
+            }
+        })
 
         const worldLayer = new PIXI.Container();
         const entityLayer = new PIXI.Container();
@@ -305,18 +356,19 @@ export function OnlineGame() {
             animationManager.bobbleheadMix(bh);
             //animationManager.bobbleheadMix(dummy);
 
-            Promise.all([loadMap,createChar(0, server.id, server, serverState, true)])
+            Promise.all([loadMap,createChar(0, testWallet, server, serverState, true)])
             .then(([map, char]) => {
                 entityLayer.addChild(char.container);
 
-                serverState.players[server.id] = char;
+                serverState.players[testWallet] = char;
                 char.skeleton = bh;
                 server.emit('loadLevel', {
-                    data: map.data
+                    data: map.data,
+                    room: serverState.gameId
                 })
                 //prop.skeleton = dummy;
 
-                initPlayerOnServer(char);
+                initPlayerOnServer(char, serverState);
 
                 //Loads keyboard handling logic
                 const input = new Keyboard();

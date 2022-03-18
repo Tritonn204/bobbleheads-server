@@ -62,7 +62,7 @@ export function bindKeys(player, keyboard, window) {
 }
 
 export function bindKeysServer(player, keyboard, window, socket) {
-    keyboard.addMapping(W, keyState => {
+    keyboard.addMapping(UP, keyState => {
         socket.emit('jump', keyState);
         // if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
         //     player.jump.start();
@@ -80,7 +80,7 @@ export function bindKeysServer(player, keyboard, window, socket) {
         socket.emit('respawn', keyState);
     });
 
-    keyboard.addMapping(S, keyState => {
+    keyboard.addMapping(DOWN, keyState => {
         if (keyState == 1) {
             player.crouching = true;
         } else {
@@ -89,14 +89,14 @@ export function bindKeysServer(player, keyboard, window, socket) {
         socket.emit('crouch', keyState);
     });
 
-    keyboard.addMapping(RIGHT, keyState => {
+    keyboard.addMapping(D, keyState => {
         if (keyState) {
             player.punch.advance();
         }
         socket.emit('punch', keyState);
     });
 
-    keyboard.addMapping(DOWN, keyState => {
+    keyboard.addMapping(S, keyState => {
         if (keyState == 1) {
             player.guard = true;
         } else {
@@ -105,12 +105,12 @@ export function bindKeysServer(player, keyboard, window, socket) {
         socket.emit('guard', keyState);
     });
 
-    keyboard.addMapping(D, keyState => {
+    keyboard.addMapping(RIGHT, keyState => {
         player.run.dir += keyState ? 1 : -1;
         socket.emit('move right', keyState);
     });
 
-    keyboard.addMapping(A, keyState => {
+    keyboard.addMapping(LEFT, keyState => {
         player.run.dir += keyState ? -1 : 1;
         socket.emit('move left', keyState);
     });

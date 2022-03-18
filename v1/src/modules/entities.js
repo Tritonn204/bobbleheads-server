@@ -45,7 +45,9 @@ export function createChar(index, id, socket, isClient, serverState) {
                 const running = char.run.speed*0.99;
 
                 if (char.hurtTime < physics.hitCooldown ){
-                    const anim = (char.hitSource == char.facing ? "Hurt B" : "Hurt A");
+                    let anim = (char.hitSource == char.facing ? "Hurt B" : "Hurt A");
+                    anim = char.guard && char.hitSource != char.facing ? "Hurt Guard" : anim;
+                    
                     if (playing != anim){
                         char.skeleton.state.setAnimation(0, anim, false);
                         char.currentAnimation = anim;
