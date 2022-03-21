@@ -99,7 +99,6 @@ class Entity {
                     this.isGrounded = false;
                     this.vel.x = this.getImpactVelocity()*cantidate.facing;
                     this.vel.y = -800;
-                    console.log("Took hit from", cantidate);
                 } else {
                     this.ragdoll = true;
                     this.isGrounded = false;

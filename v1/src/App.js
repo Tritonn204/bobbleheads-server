@@ -8,11 +8,11 @@ import { ReferenceDataContext } from "./ReferenceDataContext";
 import socketIOClient from "socket.io-client";
 
 //SERVER URL
-const ENDPOINT = "https://bh-server-v1.herokuapp.com/";
-//const ENDPOINT = "http://localhost:4001";
+//const ENDPOINT = "https://bh-server-v1.herokuapp.com/";
+const ENDPOINT = "http://localhost:4001";
 
 // Web pages
-const RPCURL = "https://rpc.ftm.tools/";
+const RPCURL = "https://rpc.ankr.com/fantom";
 const NETWORK = 250;
 
 function App() {
