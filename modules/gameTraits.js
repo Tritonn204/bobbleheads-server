@@ -54,7 +54,7 @@ class Punch extends Trait {
 
         this.delay = 0.1;
         this.punchPenalty = 0.15;
-        this.hitWindow = 0.15;
+        this.hitWindow = 0.1;
 
         this.inset = 16;
         this.width = 140;
