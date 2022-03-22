@@ -53,10 +53,11 @@ class Punch extends Trait {
         this.engageTime = 0;
 
         this.delay = 0.1;
+        this.punchPenalty = 0.15;
         this.hitWindow = 0.15;
 
         this.inset = 16;
-        this.width = 120;
+        this.width = 140;
         this.height = 100;
 
         this.bounds = new physics.BoundingBox();
@@ -83,7 +84,7 @@ class Punch extends Trait {
                 this.index++;
                 this.queued = true;
 
-                this.cooldownTimer -= 0.4
+                this.cooldownTimer -= this.punchPenalty;
                 this.cooldownTimer = Math.max(this.cooldownTimer, 0);
             }
             if (this.index == 2)
