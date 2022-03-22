@@ -49,7 +49,7 @@ class Punch extends Trait {
         super('punch');
 
         this.duration = 0.5;
-        this.comboPeriod = 0.35;
+        this.comboPeriod = 0.39;
         this.engageTime = 0;
 
         this.delay = 0.1;
