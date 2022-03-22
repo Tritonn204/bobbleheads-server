@@ -74,11 +74,11 @@ class Punch extends Trait {
     }
 
     advance() {
-        if (this.cooldownTimer < this.cooldownDuration)
-            return;
         if (!this.active)
             this.start();
         else if (this.index < 2){
+            if (this.cooldownTimer < this.cooldownDuration && this.index == 1)
+                return;
             if (this.engageTime < this.comboPeriod){
                 this.engageTime = this.duration;
                 this.index++;
