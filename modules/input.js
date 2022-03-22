@@ -60,4 +60,9 @@ function input(player, socket) {
     });
 }
 
-module.exports = input;
+function clear(player, socket) {
+    player.run.dir = 0;
+    player.jump.cancel();
+}
+
+module.exports = {input, clear};
