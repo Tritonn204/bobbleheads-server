@@ -62,7 +62,7 @@ class Punch extends Trait {
 
         this.bounds = new physics.BoundingBox();
 
-        this.cooldownDuration = 0.6;
+        this.cooldownDuration = 0.25;
         this.cooldownTimer = 0;
 
         this.animationNames = ["Punch A", "Punch B", "Punch C"];
