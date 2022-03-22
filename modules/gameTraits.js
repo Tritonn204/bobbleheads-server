@@ -53,7 +53,7 @@ class Punch extends Trait {
         this.engageTime = 0;
 
         this.delay = 0.1;
-        this.punchPenalty = 0;
+        this.punchPenalty = 0.4;
         this.hitWindow = 0.1;
 
         this.inset = 16;
@@ -62,7 +62,7 @@ class Punch extends Trait {
 
         this.bounds = new physics.BoundingBox();
 
-        this.cooldownDuration = 0.25;
+        this.cooldownDuration = 1.25;
         this.cooldownTimer = 0;
 
         this.animationNames = ["Punch A", "Punch B", "Punch C"];
@@ -120,8 +120,7 @@ class Punch extends Trait {
             this.active = false;
             this.index = 0;
         }
-        if (this.active == false)
-            this.cooldownTimer += delta;
+        this.cooldownTimer += delta;
     }
 }
 
