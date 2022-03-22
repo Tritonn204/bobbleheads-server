@@ -49,11 +49,11 @@ class Punch extends Trait {
         super('punch');
 
         this.duration = 0.5;
-        this.comboPeriod = 0.39;
+        this.comboPeriod = 0.3;
         this.engageTime = 0;
 
         this.delay = 0.1;
-        this.punchPenalty = 0;
+        this.punchPenalty = 0.5;
         this.hitWindow = 0.1;
 
         this.inset = 16;
@@ -62,7 +62,7 @@ class Punch extends Trait {
 
         this.bounds = new physics.BoundingBox();
 
-        this.cooldownDuration = 0.6;
+        this.cooldownDuration = 1.5;
         this.cooldownTimer = 0;
 
         this.animationNames = ["Punch A", "Punch B", "Punch C"];
@@ -74,11 +74,11 @@ class Punch extends Trait {
     }
 
     advance() {
+        if (this.cooldownTimer < this.cooldownDuration && this.index == 1)
+            return;
         if (!this.active)
             this.start();
         else if (this.index < 2){
-            if (this.cooldownTimer < this.cooldownDuration && this.index == 1)
-                return;
             if (this.engageTime < this.comboPeriod){
                 this.engageTime = this.duration;
                 this.index++;
@@ -87,8 +87,9 @@ class Punch extends Trait {
                 this.cooldownTimer -= this.punchPenalty;
                 this.cooldownTimer = Math.max(this.cooldownTimer, 0);
             }
-            if (this.index == 2)
+            if (this.index == 2) {
                 this.cooldownTimer = 0;
+            }
         }
     }
 
