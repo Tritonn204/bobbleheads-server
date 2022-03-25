@@ -36,7 +36,7 @@ const liveMatches = [];
 if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    const httpServer = http.createServer();
+    const httpServer = http.createServer(app);
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection"
     });
@@ -57,7 +57,7 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ host: "localhost", port: 6379});
     const subClient = pubClient.duplicate();
-    const server = http.createServer();
+    const server = http.createServer(app);
 
     const io = new socketIo.Server(server, {
         cors: {
