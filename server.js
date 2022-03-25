@@ -26,8 +26,6 @@ app.use(index);
 const { createClient } = require("redis");
 const { createAdapter } = require("@socket.io/redis-adapter");
 
-const server = http.createServer(app);
-
 const socketIo = require('socket.io');
 const level = new Level();
 
@@ -38,8 +36,8 @@ const liveMatches = [];
 if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    const httpServer = http.createServer();
-    setupMaster(httpServer, {
+    const httpServer = http.createServer(app);
+    setupMaster(server, {
         loadBalancingMethod: "least-connection"
     });
     httpServer.listen(port);
@@ -59,6 +57,7 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ host: "localhost", port: 6379});
     const subClient = pubClient.duplicate();
+    const server = http.createServer();
 
     const io = new socketIo.Server(server, {
         cors: {
