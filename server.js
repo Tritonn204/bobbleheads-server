@@ -37,7 +37,7 @@ if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
     const httpServer = http.createServer(app);
-    setupMaster(server, {
+    setupMaster(httpServer, {
         loadBalancingMethod: "least-connection"
     });
     httpServer.listen(port);
