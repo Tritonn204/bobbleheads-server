@@ -36,7 +36,7 @@ const liveMatches = [];
 if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    const httpServer = http.createServer(app);
+    const httpServer = http.createServer();
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection"
     });
