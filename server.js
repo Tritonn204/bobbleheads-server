@@ -66,7 +66,6 @@ if (cluster.isMaster) {
                 "http://localhost:3000"
             ],
             methods: ["GET", "POST"],
-            credentials: true
         }
     });
 
