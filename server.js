@@ -42,9 +42,9 @@ if (cluster.isMaster) {
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection"
     });
-    httpServer.listen(PORT);
+    httpServer.listen(port);
 
-    console.log(`Listening on port ${PORT}`);
+    console.log(`Listening on port ${port}`);
 
     for (let i = 0; i < numCPUs; i++) {
         cluster.fork();
