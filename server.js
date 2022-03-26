@@ -76,7 +76,7 @@ if (cluster.isMaster) {
 
     app.use(index);
 
-    const pubClient = createClient({ uri: 'redis://rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
+    const pubClient = createClient({ url: 'redis://:rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
     const subClient = pubClient.duplicate();
     const server = http.createServer(app);
 
