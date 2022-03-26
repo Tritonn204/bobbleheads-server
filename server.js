@@ -245,7 +245,7 @@ if (cluster.isMaster) {
                 }
             }
             if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
-            setTimeout(startBroadcast(interval));
+            setTimeout(() => startBroadcast(interval), interval);
         }, interval);
     }
 
@@ -261,7 +261,7 @@ if (cluster.isMaster) {
             lastTime = time;
             matches[room].level.update(deltaTime/1000);
 
-            setTimeout(startGameInstance(room));
+            setTimeout(() => startGameInstance(room), deltaTime/1000);
         }, delta);
     }
 }
