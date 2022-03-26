@@ -38,7 +38,7 @@ if (cluster.isMaster) {
     app.use(function (req, res, next) {
         // Website you wish to allow to connect
         for (let i = 0; i < origins.length; i++) {
-            res.setHeader('Access-Control-Allow-Origin', origins[i]);
+            res.setHeader('Access-Control-Allow-Origin', '*');
         }
 
         // Request methods you wish to allow
@@ -78,7 +78,7 @@ if (cluster.isMaster) {
     app.use(function (req, res, next) {
         // Website you wish to allow to connect
         for (let i = 0; i < origins.length; i++) {
-            res.setHeader('Access-Control-Allow-Origin', origins[i]);
+            res.setHeader('Access-Control-Allow-Origin', '*');
         }
 
         // Request methods you wish to allow
