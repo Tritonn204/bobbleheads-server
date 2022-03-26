@@ -33,28 +33,7 @@ const liveMatches = [];
 const origins = ['http://localhost:3000', 'https://youthful-keller-2f50ca.netlify.app'];
 
 if (cluster.isMaster) {
-    const app = express();
-
-    app.use(function (req, res, next) {
-        // Website you wish to allow to connect
-        for (let i = 0; i < origins.length; i++) {
-            res.setHeader('Access-Control-Allow-Origin', origins[i]);
-        }
-
-        // Request methods you wish to allow
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-        // Request headers you wish to allow
-        res.setHeader('Access-Control-Allow-Headers', '*');
-
-        res.header("Access-Control-Allow-Credentials", true);
-
-        // Pass to next layer of middleware
-        next();
-    });
-
-    app.use(index);
-    const httpServer = http.createServer(app);
+    const httpServer = http.createServer();
 
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection",
@@ -73,33 +52,12 @@ if (cluster.isMaster) {
         cluster.fork();
     });
 } else {
-    const app = express();
-
-    app.use(function (req, res, next) {
-        // Website you wish to allow to connect
-        for (let i = 0; i < origins.length; i++) {
-            res.setHeader('Access-Control-Allow-Origin', origins[i]);
-        }
-
-        // Request methods you wish to allow
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
-
-        // Request headers you wish to allow
-        res.setHeader('Access-Control-Allow-Headers', '*');
-
-        res.header("Access-Control-Allow-Credentials", true);
-
-        // Pass to next layer of middleware
-        next();
-    });
 
     console.log(`Worker ${process.pid} is running`);
 
-    app.use(index);
-
     const pubClient = createClient({ url: 'redis://:rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
     const subClient = pubClient.duplicate();
-    const server = http.createServer(app);
+    const server = http.createServer();
 
     const io = new socketIo.Server(server, {
         cors: {
