@@ -261,7 +261,7 @@ if (cluster.isMaster) {
             const time = Date.now();
             let deltaTime = time - lastTime;
             lastTime = time;
-            matches[gameId].level.update(deltaTime/1000);
+            matches[room].level.update(deltaTime/1000);
 
             setTimeout(startGameInstance(room));
         }, delta);
