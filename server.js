@@ -57,7 +57,7 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ host: "localhost", port: 6379});
     const subClient = pubClient.duplicate();
-    const server = http.createServer(app);
+    const server = http.createServer();
 
     const io = new socketIo.Server(server, {
         cors: {
@@ -118,8 +118,8 @@ if (cluster.isMaster) {
             matches[gameId].players = {};
             liveMatches.push(gameId);
 
-            matches[gameId].sendPackets = startBroadcast(gameId).bind(matches[gameId]);
-            matches[gameId].update = startGameInstance(gameId).bind(matches[gameId]);
+            matches[gameId].sendPackets = startBroadcast(gameId);
+            matches[gameId].update = startGameInstance(gameId);
         })
 
         socket.on('endGame', data => {
@@ -229,20 +229,20 @@ if (cluster.isMaster) {
         return setTimeout(async () => {
             let pack = {};
 
-            const playerIDs = Object.keys(this.players);
+            const playerIDs = Object.keys(matches[gameId]players);
             for (const ID of playerIDs) {
                 pack[ID] = {
-                    hp: this.players[ID].hp,
-                    skeleton: this.players[ID].skeleton,
-                    pos: this.players[ID].pos,
-                    vel: this.players[ID].vel,
-                    command: this.players[ID].command,
-                    heading: this.players[ID].heading,
-                    facing: this.players[ID].facing,
-                    grounded: this.players[ID].isGrounded,
-                    animation: this.players[ID].animation,
-                    hurtTime: this.players[ID].hurtTime,
-                    hitSource: this.players[ID].hitSource,
+                    hp: matches[gameId]players[ID].hp,
+                    skeleton: matches[gameId]players[ID].skeleton,
+                    pos: matches[gameId]players[ID].pos,
+                    vel: matches[gameId]players[ID].vel,
+                    command: matches[gameId]players[ID].command,
+                    heading: matches[gameId]players[ID].heading,
+                    facing: matches[gameId]players[ID].facing,
+                    grounded: matches[gameId]players[ID].isGrounded,
+                    animation: matches[gameId]players[ID].animation,
+                    hurtTime: matches[gameId]players[ID].hurtTime,
+                    hitSource: matches[gameId]players[ID].hitSource,
                 }
             }
             if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
@@ -260,7 +260,7 @@ if (cluster.isMaster) {
             const time = Date.now();
             let deltaTime = time - lastTime;
             lastTime = time;
-            this.level.update(deltaTime/1000);
+            matches[gameId]level.update(deltaTime/1000);
 
             setTimeout(startGameInstance(room));
         }, delta);
