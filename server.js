@@ -225,7 +225,7 @@ if (cluster.isMaster) {
 
     //Create a packet for the server-side player data, and broadcast it at a set rate of 'interval' ms
     const startBroadcast = (room) => {
-        return setTimeout(async () => {
+        return setInterval(async () => {
             let pack = {};
 
             const playerIDs = Object.keys(matches[gameId].players);
@@ -245,7 +245,6 @@ if (cluster.isMaster) {
                 }
             }
             if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
-            setTimeout(async () => startBroadcast(interval), interval);
         }, interval);
     }
 
@@ -255,13 +254,11 @@ if (cluster.isMaster) {
     let accumulatedTime = 0;
 
     const startGameInstance = (room) => {
-        return setTimeout(async () => {
+        return setInterval(() => {
             const time = Date.now();
             let deltaTime = time - lastTime;
             lastTime = time;
             matches[room].level.update(deltaTime/1000);
-
-            setTimeout(async () => startGameInstance(room), deltaTime/1000);
         }, delta);
     }
 }
