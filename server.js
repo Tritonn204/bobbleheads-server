@@ -20,8 +20,6 @@ const delta = 1000/60; //Server physics frame rate
 
 const { setupMaster, setupWorker } = require("@socket.io/sticky");
 
-app.use(index);
-
 const { createClient } = require("redis");
 const { createAdapter } = require("@socket.io/redis-adapter");
 
