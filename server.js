@@ -20,7 +20,6 @@ const delta = 1000/60; //Server physics frame rate
 
 const { setupMaster, setupWorker } = require("@socket.io/sticky");
 
-const app = express();
 app.use(index);
 
 const { createClient } = require("redis");
@@ -34,6 +33,7 @@ const matchIdsByWallet = {};
 const liveMatches = [];
 
 if (cluster.isMaster) {
+    const app = express();
     console.log(`Master ${process.pid} is running`);
 
     const httpServer = http.createServer(app);
@@ -53,6 +53,7 @@ if (cluster.isMaster) {
         cluster.fork();
     });
 } else {
+    const app = express();
     console.log(`Worker ${process.pid} is running`);
 
     const pubClient = createClient({ host: "localhost", port: 6379});
