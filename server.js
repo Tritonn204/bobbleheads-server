@@ -229,20 +229,20 @@ if (cluster.isMaster) {
         return setTimeout(async () => {
             let pack = {};
 
-            const playerIDs = Object.keys(matches[gameId]players);
+            const playerIDs = Object.keys(matches[gameId].players);
             for (const ID of playerIDs) {
                 pack[ID] = {
-                    hp: matches[gameId]players[ID].hp,
-                    skeleton: matches[gameId]players[ID].skeleton,
-                    pos: matches[gameId]players[ID].pos,
-                    vel: matches[gameId]players[ID].vel,
-                    command: matches[gameId]players[ID].command,
-                    heading: matches[gameId]players[ID].heading,
-                    facing: matches[gameId]players[ID].facing,
-                    grounded: matches[gameId]players[ID].isGrounded,
-                    animation: matches[gameId]players[ID].animation,
-                    hurtTime: matches[gameId]players[ID].hurtTime,
-                    hitSource: matches[gameId]players[ID].hitSource,
+                    hp: matches[gameId].players[ID].hp,
+                    skeleton: matches[gameId].players[ID].skeleton,
+                    pos: matches[gameId].players[ID].pos,
+                    vel: matches[gameId].players[ID].vel,
+                    command: matches[gameId].players[ID].command,
+                    heading: matches[gameId].players[ID].heading,
+                    facing: matches[gameId].players[ID].facing,
+                    grounded: matches[gameId].players[ID].isGrounded,
+                    animation: matches[gameId].players[ID].animation,
+                    hurtTime: matches[gameId].players[ID].hurtTime,
+                    hitSource: matches[gameId].players[ID].hitSource,
                 }
             }
             if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
