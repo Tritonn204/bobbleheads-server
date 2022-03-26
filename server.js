@@ -72,6 +72,23 @@ if (cluster.isMaster) {
     });
 } else {
     const app = express();
+
+    app.use(function (req, res, next) {
+        // Website you wish to allow to connect
+        for (let i = 0; i < origins.length; i++) {
+            res.setHeader('Access-Control-Allow-Origin', origins[i]);
+        }
+
+        // Request methods you wish to allow
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+
+        // Request headers you wish to allow
+        res.setHeader('Access-Control-Allow-Headers', '*');
+
+        // Pass to next layer of middleware
+        next();
+    });
+
     console.log(`Worker ${process.pid} is running`);
 
     app.use(index);
