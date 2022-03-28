@@ -16,7 +16,7 @@ const port = process.env.PORT || 4001;
 const index = require("./routes/index");
 
 const interval = 1000/25; //Server broadcast rate
-const delta = 1000/60; //Server physics frame rate
+const delta = 1000/61; //Server physics frame rate
 
 const { setupMaster, setupWorker } = require("@socket.io/sticky");
 
@@ -43,8 +43,9 @@ if (cluster.isMaster) {
 
     console.log(`Master ${process.pid} is running`, `Listening on port ${port}`);
 
-    for (let i = 0; i < numCPUs; i++) {
-        cluster.fork();
+    for (let i = 0; i < Math.min(numCPUs, 1); i++) {
+        const PORT = port+i+1;
+        cluster.fork({port: PORT});
     }
 
     cluster.on("exit", (worker) => {
@@ -84,9 +85,10 @@ if (cluster.isMaster) {
                 socket.userData.wallet = data;
             });
 
-            socket.on('getGameId', cb => {
+            socket.on('getGameId', async (cb) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
                 let id = null;
-                if (matchIdsByWallet[socket.userData.wallet]) id = matchIdsByWallet[socket.userData.wallet];
+                if (currentMatch && currentMatch != 0) id = currentMatch;
                 if (typeof cb === "function")
                 cb(id);
             });
@@ -94,11 +96,13 @@ if (cluster.isMaster) {
             socket.on('requestGame', cb => {
                 var gameId = (( Math.random() * 99999 ) | 0) + 1;
                 if (typeof cb === "function")
-                cb(gameId);
+                cb(gameId.toString());
             });
 
-            socket.on('fetchData', cb => {
-                const data = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
+            socket.on('fetchData', async (cb) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+                console.log(currentMatch);
+                const data = matches[currentMatch].players[socket.userData.wallet];
                 if (typeof cb === "function")
                 cb({
                     pos: data ? data.pos : new Vec2(640,0),
@@ -107,55 +111,73 @@ if (cluster.isMaster) {
                 });
             })
 
-            socket.on('fetchMatches', cb => {
-                if (typeof cb === "function")
-                cb(JSON.stringify(liveMatches));
+            socket.on('fetchMatches', async (cb) => {
+                const liveMatches = await pubClient.LRANGE('liveMatches', 0, -1);
+                if (typeof cb === "function"){
+                    cb(liveMatches);
+                }
             })
 
-            socket.on('createGame', gameId => {
-                socket.join(gameId);
+            socket.on('createGame', async(room, cb) => {
+                const gameId = room.toString();
 
-                matchIdsByWallet[socket.userData.wallet] = gameId;
+                socket.join(gameId);
+                console.log(typeof gameId);
+
                 matches[gameId] = {};
                 matches[gameId].level = new Level();
                 matches[gameId].players = {};
-                liveMatches.push(gameId);
+
+                await pubClient.LPUSH('liveMatches', gameId);
+                await pubClient.set('matchIdsByWallet:' + socket.userData.wallet, gameId);
+                await pubClient.set('match:' + gameId + ':port', process.env.port);
 
                 matches[gameId].sendPackets = startBroadcast(gameId);
                 matches[gameId].update = startGameInstance(gameId);
+
+                console.log(cb);
+                if (typeof cb === "function") cb();
             })
 
-            socket.on('endGame', data => {
-                var filtered = liveMatches.filter(function(value, index, arr){
-                    if (value == matches[data.room]) liveMatches.splice(index, 1);
-                });
+            socket.on('clearMatchID', async () => {
+                await pubClient.DEL('matchIdsByWallet:' + socket.userData.wallet);
+            })
+
+            socket.on('endGame', async (data) => {
+                await pubClient.LREM('liveMatches', data.room);
+                await pubClient.DEL('match:' + data.room + ':port');
+
                 matches[data.room] = null;
+
                 io.sockets.in(data.room).emit('leave', data.room);
-                clearInterval(matches[data.gameId].sendPackets);
-                clearInterval(matches[data.gameId].update);
             });
 
-            socket.on('joinGame', data => {
-                if (matchIdsByWallet[socket.userData.wallet]) {
-                    const player = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
+            socket.on('joinGame', async (data, cb) => {
+                const gamePort = await pubClient.get('match:' + data + ':port');
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+                if (currentMatch && currentMatch != 0) {
+                    const player = matches[currentMatch].players[socket.userData.wallet];
                     if (player && player.socketID != null) {
                         io.sockets.sockets.get(player.socketID).disconnect();
                     }
                 }
                 socket.join(data);
-                matchIdsByWallet[socket.userData.wallet] = data;
+                await pubClient.set('matchIdsByWallet:' + socket.userData.wallet, data);
+                if (typeof cb === "function") cb();
             });
 
-            socket.on('leaveGame', data => {
-                socket.leave(data);
-                matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet] = null;
-                matchIdsByWallet[socket.userData.wallet] = null;
+            socket.on('leaveGame', async(data) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+                matches[currentMatch].players[socket.userData.wallet] = null;
+                await pubClient.DEL('matchIdsByWallet:' + socket.userData.wallet);
                 socket.broadcast.emit('deletePlayer', { id: socket.userData.wallet });
+                socket.leave(data);
             })
             //Initializes server framework for storing a player state
-            socket.on('init', data => {
+            socket.on('init', async (data) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
 
-                const player = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
+                const player = matches[currentMatch].players[socket.userData.wallet];
 
                 socket.userData.hp = player ? player.hp : data.hp;
                 socket.userData.pos = player ? player.pos : data.pos;
@@ -178,14 +200,16 @@ if (cluster.isMaster) {
             });
 
             //Mirror player animations from client
-            socket.on('animation', data => {
-                matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet].animation = data;
+            socket.on('animation', async (data) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+                if (matches[currentMatch].players[socket.userData.wallet]) matches[currentMatch].players[socket.userData.wallet].animation = data;
             });
 
             //Handle removing players from client worlds
-            socket.on("disconnect", (reason) => {
-                if (matchIdsByWallet[socket.userData.wallet]){
-                    const player = matches[matchIdsByWallet[socket.userData.wallet]].players[socket.userData.wallet];
+            socket.on("disconnect", async (reason) => {
+                const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+                if (currentMatch){
+                    const player = matches[currentMatch].players[socket.userData.wallet];
                     player.socketID = null;
                     clearInput(player, socket);
                     console.log(`Player ${socket.userData.wallet} lost connection, ${reason}`);
@@ -207,9 +231,11 @@ if (cluster.isMaster) {
         });
 
         //Add a new player entity to the server state for authoratative physics
-        const newPlayer = (data, socket) => {
+        const newPlayer = async (data, socket) => {
             const player = entities.createChar(socket);
-            const match = matches[matchIdsByWallet[socket.userData.wallet]];
+
+            const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
+            const match = matches[currentMatch];
 
             console.log('player ' + socket.userData.wallet + ' joined');
 
@@ -229,28 +255,36 @@ if (cluster.isMaster) {
 
         //Create a packet for the server-side player data, and broadcast it at a set rate of 'interval' ms
         const startBroadcast = (room) => {
-            return setInterval(async () => {
+            const heartbeat = async () => {
                 let pack = {};
 
+                const time =  Date.now();
+
                 const playerIDs = Object.keys(matches[room].players);
+
                 for (const ID of playerIDs) {
-                    pack[ID] = {
-                        timestamp: Date.now(),
-                        hp: matches[room].players[ID].hp,
-                        skeleton: matches[room].players[ID].skeleton,
-                        pos: {x: matches[room].players[ID].pos.x, y: matches[room].players[ID].pos.y},
-                        vel: {x: matches[room].players[ID].vel.x, y: matches[room].players[ID].vel.y},
-                        command: matches[room].players[ID].command,
-                        heading: matches[room].players[ID].heading,
-                        facing: matches[room].players[ID].facing,
-                        grounded: matches[room].players[ID].isGrounded,
-                        animation: matches[room].players[ID].animation,
-                        hurtTime: matches[room].players[ID].hurtTime,
-                        hitSource: matches[room].players[ID].hitSource,
+                    if (matches[room].players[ID]){
+                        pack[ID] = {
+                            timestamp: time,
+                            hp: matches[room].players[ID].hp,
+                            skeleton: matches[room].players[ID].skeleton,
+                            pos: {x: matches[room].players[ID].pos.x, y: matches[room].players[ID].pos.y},
+                            vel: {x: matches[room].players[ID].vel.x, y: matches[room].players[ID].vel.y},
+                            facing: matches[room].players[ID].facing,
+                            grounded: matches[room].players[ID].isGrounded,
+                            animation: matches[room].players[ID].animation,
+                            hurtTime: matches[room].players[ID].hurtTime,
+                            hitSource: matches[room].players[ID].hitSource,
+                        }
                     }
                 }
                 if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
-            }, interval);
+                //Data for future replays
+                // pubClient.HSET('matchSnapshots', room, time, JSON.stringify(pack), () => {});
+
+                setTimeout(heartbeat, interval);
+            }
+            return setTimeout(heartbeat, interval);
         }
 
 
@@ -259,7 +293,7 @@ if (cluster.isMaster) {
         let accumulatedTime = 0;
 
         const startGameInstance = (room) => {
-            return setInterval(() => {
+            const update = () => {
                 const time = Date.now();
                 accumulatedTime += time - lastTime;
                 lastTime = time;
@@ -267,7 +301,18 @@ if (cluster.isMaster) {
                     matches[room].level.update(delta/1000);
                     accumulatedTime -= delta;
                 }
-            }, delta);
+                setTimeout(update, delta);
+            }
+            return setTimeout(update, delta);
         }
+    });
+
+    server.listen(process.env.port);
+
+    process.on('exit', () => {
+        Object.keys(matches).forEach(async(key) => {
+            await pubClient.LREM('liveMatches', key);
+            io.emit('clearMatchID');
+        })
     });
 }
