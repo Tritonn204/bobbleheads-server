@@ -1,4 +1,4 @@
-const { Vec2 } = require('./util.js');
+const { Vec2, angleFromPoints, angleToVel } = require('./util.js');
 const physics = require('./physics.js');
 
 class Trait {
@@ -70,6 +70,10 @@ class Entity {
 
         this.getDirection(delta);
         this.hp = Math.max(this.hp,0);
+
+        if (this.hp == 0) {
+            this.respawn();
+        }
     }
 
     collides(cantidate) {
@@ -77,37 +81,67 @@ class Entity {
     }
 
     hit(cantidate) {
-        if (this.punch){
-            const dir = cantidate.pos.x > this.pos.x ? 1 : -1;
-            this.hitSource = dir;
-            if (this.punch.index == 2) {
-                this.ragdoll = true;
-                this.isGrounded = false;
-                this.vel.x = this.getImpactVelocity()*dir/2;
-                this.vel.y = -500;
-            }
+        switch(this.attackType) {
+            case 'punch':
+                const dir = cantidate.pos.x > this.pos.x ? 1 : -1;
+                this.hitSource = dir;
+                if (this.punch.index == 2) {
+                    this.ragdoll = true;
+                    this.isGrounded = false;
+                    this.vel.x = this.getImpactVelocity()*dir/2;
+                    this.vel.y = -500;
+                }
+                break;
         }
     }
 
     hurt(cantidate) {
         if (this.hurtTime >= physics.hitCooldown){
-            if (cantidate.punch){
-                this.hp -= 10;
-                const dir = cantidate.pos.x < this.pos.x ? 1 : -1;
-                this.hitSource = dir;
-                if (cantidate.punch.index == 2) {
+            var newVel;
+            switch (cantidate.attackType) {
+                case 'punch':
+                    this.hp -= 10;
+                    const dir = cantidate.pos.x < this.pos.x ? 1 : -1;
+                    this.hitSource = dir;
+                    if (cantidate.punch.index == 2) {
+                        this.hp -= 50;
+                        this.ragdoll = true;
+                        this.isGrounded = false;
+                        this.vel.x = this.getImpactVelocity()*cantidate.facing;
+                        this.vel.y = -800;
+                    } else {
+                        this.ragdoll = true;
+                        this.isGrounded = false;
+                        this.vel.x = cantidate.facing*this.getImpactVelocity()/2;
+                        this.vel.y = -250;
+                    }
+                    break;
+
+                case 'dashAttack':
                     this.hp -= 50;
                     this.ragdoll = true;
-                    this.isGrounded = false;
-                    this.vel.x = this.getImpactVelocity()*cantidate.facing;
-                    this.vel.y = -800;
-                } else {
+                    newVel = angleToVel(angleFromPoints(cantidate.pos, this.pos));
+                    this.vel.x = this.getImpactVelocity()*newVel.x;
+                    this.vel.y = this.getImpactVelocity()*newVel.y;
+
+                    if (newVel.y < 0) this.isGrounded = false;
+                    break;
+
+                case 'fallingAttack':
+                    this.hp -= 50;
+                    break;
+
+                case 'risingAttack':
+                    this.hp -= 50;
                     this.ragdoll = true;
-                    this.isGrounded = false;
-                    this.vel.x = cantidate.facing*this.getImpactVelocity()/2;
-                    this.vel.y = -250;
-                }
+                    newVel = angleToVel(angleFromPoints(cantidate.pos, this.pos));
+                    this.vel.x = this.getImpactVelocity()*newVel.x*0.5;
+                    this.vel.y = this.getImpactVelocity()*newVel.y*1.5;
+
+                    if (newVel.y < 0) this.isGrounded = false;
+                    break;
             }
+
             this.hurtTime = 0;
         }
     }

@@ -15,7 +15,7 @@ const playerInputs = {};
 
 function input(player, socket) {
     playerInputs[socket.userData.wallet] = {};
-    
+
     socket.on('jump', keyState => {
         playerInputs[socket.userData.wallet]['jump'] = keyState;
         if (keyState) {
@@ -29,10 +29,10 @@ function input(player, socket) {
     socket.on('respawn', keyState => {
         playerInputs[socket.userData.wallet]['respawn'] = keyState;
          if (keyState) {
-             player.pos.x = 640;
-             player.pos.y = 0;
-             player.vel.x = 0;
-             player.vel.y = 0;
+             // player.pos.x = 640;
+             // player.pos.y = 0;
+             // player.vel.x = 0;
+             // player.vel.y = 0;
          }
     });
 
@@ -42,6 +42,26 @@ function input(player, socket) {
             player.crouching = true;
         } else {
             player.crouching = false;
+        }
+    });
+
+    socket.on('dashAttack', keyState => {
+        if (keyState) {
+            if (player.run.dir != 0) {
+                player.dashAttack.start(player.run.dir);
+            }
+        }
+    });
+
+    socket.on('fallingAttack', keyState => {
+        if (keyState) {
+            player.fallingAttack.start();
+        }
+    });
+
+    socket.on('risingAttack', keyState => {
+        if (keyState) {
+            player.risingAttack.start();
         }
     });
 

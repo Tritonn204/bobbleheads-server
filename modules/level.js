@@ -43,6 +43,10 @@ class Level {
 
             if (entity.vel.y > physics.terminalVelocity)
                 entity.vel.y = physics.terminalVelocity;
+
+            if (entity.pos.y > this.data.map_height*64) {
+                entity.respawn();
+            }
         });
     }
 
