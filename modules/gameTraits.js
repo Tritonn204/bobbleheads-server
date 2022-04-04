@@ -45,7 +45,7 @@ class Run extends Trait {
 }
 
 class Punch extends Trait {
-    constructor(socket) {
+    constructor() {
         super('punch');
 
         this.duration = 0.5;
@@ -56,11 +56,10 @@ class Punch extends Trait {
         this.punchPenalty = 0.5;
         this.hitWindow = 0.1;
 
-        this.inset = 16;
-        this.width = 140;
-        this.height = 100;
-
-        this.bounds = new physics.BoundingBox();
+        this.insetX = [80,80,80];
+        this.insetY = [24,24,-40];
+        this.width = [100,100,100];
+        this.height = [80,80,136];
 
         this.cooldownDuration = 1.5;
         this.cooldownTimer = 0;
@@ -105,11 +104,10 @@ class Punch extends Trait {
 
     hitbox(entity) {
         if (this.engageTime < this.duration - this.delay && this.engageTime > this.duration - this.delay - this.hitWindow){
-            entity.attackBounds.pos.set(entity.pos.x, entity.pos.y);
-            entity.attackBounds.size.set(this.width, this.height);
-            entity.attackBounds.offset.set((entity.width-this.inset)*entity.facing, 0);
-        } else {
-            entity.attackBounds.pos.set(-1000,0);
+            const factorX = (this.width[this.index] - entity.width)/2;
+            entity.attackBounds.pos.set(entity.pos.x - factorX, entity.pos.y);
+            entity.attackBounds.size.set(this.width[this.index], this.height[this.index]);
+            entity.attackBounds.offset.set(this.insetX[this.index]*entity.facing, this.insetY[this.index]);
         }
     }
 
@@ -125,9 +123,169 @@ class Punch extends Trait {
     }
 }
 
+class FallingAttack extends Trait {
+    constructor() {
+        super('fallingAttack');
+
+        this.active = false;
+
+        this.duration = 3;
+        this.engageTime = 0;
+
+        this.delay = 0.1;
+        this.hitWindow = 2.9;
+
+        this.insetX = 40;
+        this.insetY = -35;
+
+        this.width = 70;
+        this.height = 70;
+    }
+
+    start() {
+        if (!this.active) {
+            this.engageTime = this.duration;
+            this.active = true;
+        }
+    }
+
+    cancel() {
+        this.engageTime = 0;
+        this.active = false;
+    }
+
+    hitbox(entity) {
+        if (this.engageTime < this.duration - this.delay && this.engageTime > this.duration - this.delay - this.hitWindow){
+            const factorX = (this.width - entity.width)/2;
+            entity.attackBounds.pos.set(entity.pos.x - factorX, entity.pos.y + entity.height);
+            entity.attackBounds.size.set(this.width, this.height);
+            entity.attackBounds.offset.set(this.insetX*entity.facing, this.insetY);
+        }
+    }
+
+    update(entity, delta) {
+        if (this.engageTime > 0) {
+            this.hitbox(entity);
+            this.engageTime -= delta;
+        } else {
+            this.active = false;
+        }
+        if (entity.isGrounded) {
+            this.cancel();
+        }
+    }
+}
+
+class DashAttack extends Trait {
+    constructor() {
+        super('dashAttack');
+
+        this.active = false;
+
+        this.dir = 0;
+
+        this.width = 105;
+        this.height = 120;
+
+        this.duration = 0.65;
+        this.engageTime = 0;
+
+        this.delay = 0.3;
+        this.hitWindow = 0.2;
+
+        this.insetX = 85;
+        this.insetY = 8;
+    }
+
+    start(dir) {
+        if (!this.active) {
+            this.dir = dir;
+            this.engageTime = this.duration;
+            this.active = true;
+        }
+    }
+
+    hitbox(entity) {
+        if (this.engageTime < this.duration - this.delay && this.engageTime > this.duration - this.delay - this.hitWindow){
+            const factorX = (this.width - entity.width)/2;
+            entity.attackBounds.pos.set(entity.pos.x - factorX, entity.pos.y);
+            entity.attackBounds.size.set(this.width, this.height);
+            entity.attackBounds.offset.set(this.insetX*entity.facing, this.insetY);
+        }
+    }
+
+    update(entity, delta) {
+        if (this.engageTime > 0) {
+            this.hitbox(entity);
+            this.engageTime -= delta;
+        } else {
+            this.active = false;
+        }
+        if (entity.isGrounded) {
+            this.hitsLeft = this.maxHits;
+        }
+    }
+}
+
+class RisingAttack extends Trait {
+    constructor() {
+        super('risingAttack');
+
+        this.active = false;
+
+        this.width = 140;
+        this.height = 100;
+
+        this.duration = 0.65;
+        this.engageTime = 0;
+
+        this.delay = 0.3;
+        this.hitWindow = 0.2;
+
+        this.insetX = 0;
+        this.insetY = -105;
+
+        this.hitsLeft = 1;
+        this.maxHits = 1;
+    }
+
+    start() {
+        if (this.hitsLeft > 0) {
+            this.hitsLeft--;
+            this.engageTime = this.duration;
+            this.active = true;
+        }
+    }
+
+    hitbox(entity) {
+        if (this.engageTime < this.duration - this.delay && this.engageTime > this.duration - this.delay - this.hitWindow){
+            const factorX = (this.width - entity.width)/2;
+            entity.attackBounds.pos.set(entity.pos.x - factorX, entity.pos.y);
+            entity.attackBounds.size.set(this.width, this.height);
+            entity.attackBounds.offset.set(this.insetX*entity.facing, this.insetY);
+        }
+    }
+
+    update(entity, delta) {
+        if (this.engageTime > 0) {
+            this.hitbox(entity);
+            this.engageTime -= delta;
+        } else {
+            this.active = false;
+        }
+        if (entity.isGrounded) {
+            this.hitsLeft = this.maxHits;
+        }
+    }
+}
+
+
 class Jump extends Trait {
     constructor() {
         super('jump');
+
+        this.jumpAllowance = 2;
+        this.jumpsLeft = 2;
 
         this.duration = 0.25;
         this.velocity = 580;
@@ -135,7 +293,10 @@ class Jump extends Trait {
     }
 
     start() {
-        this.engageTime = this.duration;
+        if (this.jumpsLeft > 0) {
+            this.engageTime = this.duration;
+            this.jumpsLeft--;
+        }
     }
 
     cancel() {
@@ -146,8 +307,11 @@ class Jump extends Trait {
         if (this.engageTime > 0) {
             entity.vel.y = -this.velocity;
             this.engageTime -= delta;
+        } else if (entity.isGrounded) {
+            this.jumpsLeft = this.jumpAllowance;
         }
     }
 }
 
-module.exports = { Velocity, Jump, Run, Punch };
+
+module.exports = { Velocity, Jump, Run, Punch, RisingAttack, FallingAttack, DashAttack };

@@ -72,7 +72,7 @@ class EntityCollider {
 
     check(subject) {
         this.entities.forEach(cantidate => {
-            if (subject === cantidate) {
+            if (subject === cantidate || cantidate.walletID == subject.walletID) {
                 return;
             }
 
@@ -85,7 +85,7 @@ class EntityCollider {
 
     checkAttack(subject) {
         this.entities.forEach(cantidate => {
-            if (subject === cantidate) {
+            if (subject === cantidate ||  cantidate.walletID == subject.walletID) {
                 return;
             }
 

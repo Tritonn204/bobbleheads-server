@@ -1,5 +1,5 @@
 const { Entity } = require ('./entity.js');
-const { Velocity, Jump, Run, Punch } = require ('./gameTraits.js');
+const { Velocity, Jump, Run, Punch, RisingAttack, FallingAttack, DashAttack } = require ('./gameTraits.js');
 
 const physics = require("./physics.js");
 
@@ -19,7 +19,10 @@ function createChar(socket) {
     char.addTrait(new Velocity());
     char.addTrait(new Jump());
     char.addTrait(new Run());
+    char.addTrait(new RisingAttack());
+    char.addTrait(new FallingAttack());
     char.addTrait(new Punch());
+    char.addTrait(new DashAttack());
 
     return char;
 }

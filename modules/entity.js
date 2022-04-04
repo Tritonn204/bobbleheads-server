@@ -13,6 +13,7 @@ class Trait {
 
 class Entity {
     constructor(width=0, height=0) {
+        this.walletID = Math.floor(Math.random()*16777215).toString(16);
         this.pos = new Vec2(0,0);
         this.spawnPoint = new Vec2(0,0);
         this.vel = new Vec2(0,0);
@@ -62,6 +63,7 @@ class Entity {
         this.bounds.pos = this.pos;
         this.hurtTime += delta;
 
+        this.attackBounds.pos.set(-1000,0);
         this.traits.forEach(trait => {
             trait.update(this, delta);
         });

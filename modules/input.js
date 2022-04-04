@@ -11,9 +11,14 @@ const LEFT = 37;
 const DOWN = 40;
 const UP = 38;
 
+const playerInputs = {};
+
 function input(player, socket) {
+    playerInputs[socket.userData.wallet] = {};
+    
     socket.on('jump', keyState => {
-        if (keyState && player.isGrounded && player.vel.y < physics.jumpTolerance) {
+        playerInputs[socket.userData.wallet]['jump'] = keyState;
+        if (keyState) {
             player.jump.start();
             player.isGrounded = false;
         } else {
@@ -22,6 +27,7 @@ function input(player, socket) {
     });
 
     socket.on('respawn', keyState => {
+        playerInputs[socket.userData.wallet]['respawn'] = keyState;
          if (keyState) {
              player.pos.x = 640;
              player.pos.y = 0;
@@ -31,6 +37,7 @@ function input(player, socket) {
     });
 
     socket.on('crouch', keyState => {
+        playerInputs[socket.userData.wallet]['crouch'] = keyState;
         if (keyState == 1) {
             player.crouching = true;
         } else {
@@ -39,12 +46,22 @@ function input(player, socket) {
     });
 
     socket.on('punch', keyState => {
+        playerInputs[socket.userData.wallet]['punch'] = keyState;
         if (keyState) {
-            player.punch.advance();
+            if (player.run.dir != 0) {
+                player.dashAttack.start(player.run.dir);
+            } else if (playerInputs[socket.userData.wallet]['jump'] == 1) {
+                player.risingAttack.start();
+            } else if (playerInputs[socket.userData.wallet]['crouch'] == 1) {
+                player.fallingAttack.start();
+            } else {
+                player.punch.advance();
+            }
         }
     });
 
     socket.on('guard', keyState => {
+        playerInputs[socket.userData.wallet]['guard'] = keyState;
         if (keyState == 1) {
             player.guard = true;
         } else {

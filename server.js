@@ -261,6 +261,7 @@ if (cluster.isMaster) {
             console.log('player ' + socket.userData.wallet + ' joined lobby ' + currentMatch);
 
             match.players[socket.userData.wallet] = player;
+            player.wallet = socker.userData.wallet;
             player.socketID = socket.id;
             player.skeleton = data.skeleton;
             player.pos = data.pos;
