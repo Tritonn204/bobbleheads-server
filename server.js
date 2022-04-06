@@ -201,7 +201,9 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
         //Mirror player animations from client
         socket.on('animation', async (data) => {
             const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
-            if (matches[currentMatch].players[socket.userData.wallet]) matches[currentMatch].players[socket.userData.wallet].animation = data;
+            if (matches[currentMatch]){
+                if (matches[currentMatch].players[socket.userData.wallet]) matches[currentMatch].players[socket.userData.wallet].animation = data;
+            }
         });
 
         //Handle removing players from client worlds
