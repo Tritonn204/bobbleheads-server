@@ -61,14 +61,14 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 
     //clear database referencesof a match, then remove it from memory
     const deleteMatch = async (data) => {
-        if (matches[currentMatch]){
+        if (matches[data]){
             Object.keys(matches[data].players).forEach(async (playerID, i) => {
                 await pubClient.DEL('matchIdsByWallet:' + playerID);
             });
         }
         await pubClient.LREM('liveMatches', 0, data);
         await pubClient.DEL('match:' + data + ':port');
-        if (matches[currentMatch]) delete matches[data];
+        if (matches[data]) delete matches[data];
         console.log(`Lobby ${data} has been terminated`)
     }
 
