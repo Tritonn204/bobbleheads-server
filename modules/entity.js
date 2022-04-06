@@ -120,10 +120,10 @@ class Entity {
                 case 'dashAttack':
                     this.hp -= 50;
                     this.ragdoll = true;
-                    var angle = angleFromPoints(cantidate.pos.x, cantidate.pos.y, this.pos.x, this.pos.y);
+                    var angle = angleFromPoints(cantidate.pos.x, cantidate.pos.y+(cantidate.height/2), this.pos.x, this.pos.y);
                     newVel = angleToVel(angle);
-                    this.vel.x = this.getImpactVelocity()*newVel.x;
-                    this.vel.y = this.getImpactVelocity()*newVel.y;
+                    this.vel.x = this.getImpactVelocity()*newVel.x*3;
+                    this.vel.y = this.getImpactVelocity()*newVel.y*1.5;
 
                     console.log(angle,newVel);
 
@@ -137,7 +137,8 @@ class Entity {
                 case 'risingAttack':
                     this.hp -= 50;
                     this.ragdoll = true;
-                    newVel = angleToVel(angleFromPoints(cantidate.pos, this.pos));
+                    var angle2 = angleFromPoints(cantidate.pos.x, cantidate.pos.y, this.pos.x, this.pos.y);
+                    newVel = angleToVel(angleFromPoints(angle2));
                     this.vel.x = this.getImpactVelocity()*newVel.x*0.5;
                     this.vel.y = this.getImpactVelocity()*newVel.y*1.5;
 
