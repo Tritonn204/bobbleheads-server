@@ -336,7 +336,7 @@ if (cluster.isMaster) {
         }
     });
 
-    server.listen(process.env.port, '0.0.0.0');
+    io.listen(process.env.port);
 
     process.on('exit', () => {
         Object.keys(matches).forEach(async(key) => {
