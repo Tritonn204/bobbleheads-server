@@ -42,7 +42,7 @@ if (cluster.isMaster) {
         loadBalancingMethod: "least-connection",
     });
 
-    httpServer.listen(port);
+    httpServer.listen(port, '0.0.0.0');
 
     console.log(`Master ${process.pid} is running`, `Listening on port ${port}`);
 
@@ -336,7 +336,7 @@ if (cluster.isMaster) {
         }
     });
 
-    server.listen(process.env.port);
+    server.listen(process.env.port, '0.0.0.0');
 
     process.on('exit', () => {
         Object.keys(matches).forEach(async(key) => {
