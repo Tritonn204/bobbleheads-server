@@ -23,7 +23,7 @@ const angleFromPoints = (cx, cy, ex, ey) => {
 }
 
 const angleToVel = (theta) => {
-    return new Vec2(Math.cos(theta)+1, Math.sin(theta)+1);
+    return new Vec2(Math.cos(theta), Math.sin(theta));
 }
 
 class Matrix {
