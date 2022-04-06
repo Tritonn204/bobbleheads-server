@@ -10,7 +10,7 @@ const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
 
 const express = require('express');
-const http = require('http');
+const https = require('https');
 
 const port = parseInt(process.env.PORT) || 4000;
 const index = require("./routes/index");
@@ -36,7 +36,7 @@ const origins = [firstOrigin, 'https://youthful-keller-2f50ca.netlify.app'];
 const processPorts = {};
 
 if (cluster.isMaster) {
-    const httpServer = http.createServer();
+    const httpServer = https.createServer();
 
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection",
@@ -63,7 +63,7 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ url: 'redis://:rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
     const subClient = pubClient.duplicate();
-    const server = http.createServer();
+    const server = https.createServer();
 
     //Gameloop instance timer data
     let lastTime = {};
