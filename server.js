@@ -228,7 +228,7 @@ if (cluster.isMaster) {
             //Handle removing players from client worlds
             socket.on("disconnect", async (reason) => {
                 const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
-                if (currentMatch){
+                if (currentMatch && matches[currentMatch]){
                     const player = matches[currentMatch].players[socket.userData.wallet];
                     player.socketID;
                     clearInput(player, socket);
