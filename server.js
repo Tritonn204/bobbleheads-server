@@ -209,7 +209,6 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
             const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
             if (currentMatch && matches[currentMatch]){
                 const player = matches[currentMatch].players[socket.userData.wallet];
-                player.socketID;
                 clearInput(player, socket);
                 console.log(`Player ${socket.userData.wallet} lost connection, ${reason}`);
             } else {
