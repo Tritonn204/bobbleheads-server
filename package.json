@@ -10,7 +10,7 @@
     "socket.io": "^4.4.1"
   },
   "scripts": {
-    "start": "PORT=8081 pm2 start server.js & PORT=8082 pm2 start server.js & PORT=8083 pm2 start server.js & PORT=8084 pm2 start server.js",
-    "start-dev": "PORT=8081 DEVMODE=true pm2 start server.js & PORT=8082 DEVMODE=true pm2 start server.js & PORT=8083 DEVMODE=true pm2 start server.js & PORT=8084 DEVMODE=true pm2 start server.js"
+    "start": "PORT=8081 pm2 start server.js && PORT=8082 pm2 start server.js && PORT=8083 pm2 start server.js && PORT=8084 pm2 start server.js",
+    "start-dev": "PORT=8081 DEVMODE=true pm2 start server.js && PORT=8082 DEVMODE=true pm2 start server.js && PORT=8083 DEVMODE=true pm2 start server.js && PORT=8084 DEVMODE=true pm2 start server.js"
   }
 }
