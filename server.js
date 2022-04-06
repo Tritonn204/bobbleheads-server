@@ -73,10 +73,8 @@ if (cluster.isMaster) {
     const subClient = pubClient.duplicate();
     const server = https.createServer(
         {
-          key: fs.readFileSync("server.key"),
-          cert: fs.readFileSync("server.cert"),
-          requestCert: false,
-          rejectUnauthorized: false,
+          cert: fs.readFileSync("/etc/letsencrypt/live/ca.bobbleheadsservers.live/fullchain.pem"),
+          key: fs.readFileSync("/etc/letsencrypt/live/ca.bobbleheadsservers.live/privkey.pem"),
         });
 
     //Gameloop instance timer data
