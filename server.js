@@ -59,8 +59,6 @@ const io = new socketIo.Server(server, {
 Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     io.adapter(createAdapter(pubClient, subClient));
 
-    setupWorker(io);
-
     //clear database referencesof a match, then remove it from memory
     const deleteMatch = async (data) => {
         Object.keys(matches[data].players).forEach(async (playerID, i) => {
@@ -311,4 +309,4 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
     }
 });
 
-server.listen(port);
+server.listen(port, '0.0.0.0');

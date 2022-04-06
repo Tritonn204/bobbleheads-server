@@ -10,6 +10,7 @@
     "socket.io": "^4.4.1"
   },
   "scripts": {
-    "start": "node server.js"
+    "start": "PORT=8081 node server.js & PORT=8082 node server.js & PORT=8083 node server.js & PORT=8084 node server.js",
+    "start-dev": "PORT=8081 DEVMODE=true node server.js & PORT=8082 DEVMODE=true node server.js & PORT=8083 DEVMODE=true node server.js & PORT=8084 DEVMODE=true node server.js"
   }
 }
