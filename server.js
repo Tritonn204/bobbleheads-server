@@ -10,7 +10,7 @@ const cluster = require("cluster");
 const numCPUs = require("os").cpus().length;
 
 const express = require('express');
-const http = require('http');
+const https = require('https');
 
 const port = parseInt(process.env.PORT) || 4000;
 const index = require("./routes/index");
@@ -35,8 +35,16 @@ const origins = [firstOrigin, 'https://youthful-keller-2f50ca.netlify.app'];
 
 const processPorts = {};
 
+var fs = require("fs");
+
 if (cluster.isMaster) {
-    const httpServer = http.createServer();
+    const httpServer = https.createServer(
+        {
+          key: fs.readFileSync("server.key"),
+          cert: fs.readFileSync("server.cert"),
+          requestCert: false,
+          rejectUnauthorized: false,
+        });
 
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection",
@@ -63,7 +71,11 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ url: 'redis://:rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
     const subClient = pubClient.duplicate();
-    const server = http.createServer();
+    const server = https.createServer(
+        {
+          cert: fs.readFileSync("/etc/letsencrypt/live/ca.bobbleheadsservers.live/fullchain.pem"),
+          key: fs.readFileSync("/etc/letsencrypt/live/ca.bobbleheadsservers.live/privkey.pem"),
+        });
 
     //Gameloop instance timer data
     let lastTime = {};
@@ -76,7 +88,6 @@ if (cluster.isMaster) {
                 "http://localhost:3000"
             ],
             methods: ["GET", "POST"],
-            credentials: true
         }
     });
 
