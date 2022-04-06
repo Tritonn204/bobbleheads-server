@@ -12,7 +12,7 @@ const numCPUs = require("os").cpus().length;
 const express = require('express');
 const http = require('http');
 
-const port = process.env.PORT || 4000;
+const port = parseInt(process.env.PORT) || 4000;
 const index = require("./routes/index");
 
 const interval = 1000/25; //Server broadcast rate
