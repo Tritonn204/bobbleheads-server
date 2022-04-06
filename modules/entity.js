@@ -120,11 +120,12 @@ class Entity {
                 case 'dashAttack':
                     this.hp -= 50;
                     this.ragdoll = true;
-                    newVel = angleToVel(angleFromPoints(cantidate.pos.x, cantidate.pos.y, this.pos.x, this.pos.y));
+                    var angle = angleFromPoints(cantidate.pos.x, cantidate.pos.y, this.pos.x, this.pos.y);
+                    newVel = angleToVel(angle);
                     this.vel.x = this.getImpactVelocity()*newVel.x;
                     this.vel.y = this.getImpactVelocity()*newVel.y;
 
-                    console.log(newVel);
+                    console.log(angle,newVel);
 
                     if (newVel.y < 0) this.isGrounded = false;
                     break;
