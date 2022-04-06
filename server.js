@@ -35,8 +35,14 @@ const origins = [firstOrigin, 'https://youthful-keller-2f50ca.netlify.app'];
 
 const processPorts = {};
 
+var fs = require("fs");
+
 if (cluster.isMaster) {
-    const httpServer = https.createServer();
+    const httpServer = https.createServer(
+        {
+          key: fs.readFileSync("server.key"),
+          cert: fs.readFileSync("server.cert"),
+        });
 
     setupMaster(httpServer, {
         loadBalancingMethod: "least-connection",
@@ -63,7 +69,11 @@ if (cluster.isMaster) {
 
     const pubClient = createClient({ url: 'redis://:rIFAotBkFclk7tIV6DaDcGdVWgaUU1rb@redis-10388.c81.us-east-1-2.ec2.cloud.redislabs.com:10388'});
     const subClient = pubClient.duplicate();
-    const server = https.createServer();
+    const server = https.createServer(
+        {
+          key: fs.readFileSync("server.key"),
+          cert: fs.readFileSync("server.cert"),
+        });
 
     //Gameloop instance timer data
     let lastTime = {};
