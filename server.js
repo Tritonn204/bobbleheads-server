@@ -42,6 +42,8 @@ if (cluster.isMaster) {
         {
           key: fs.readFileSync("server.key"),
           cert: fs.readFileSync("server.cert"),
+          requestCert: false,
+          rejectUnauthorized: false,
         });
 
     setupMaster(httpServer, {
@@ -73,6 +75,8 @@ if (cluster.isMaster) {
         {
           key: fs.readFileSync("server.key"),
           cert: fs.readFileSync("server.cert"),
+          requestCert: false,
+          rejectUnauthorized: false,
         });
 
     //Gameloop instance timer data
