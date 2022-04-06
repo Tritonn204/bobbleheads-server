@@ -310,3 +310,9 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 });
 
 server.listen(port, '0.0.0.0');
+
+process.on('exit', () => {
+    Object.keys(matches).forEach(async(key) => {
+        await deleteMatch(key);
+    })
+});
