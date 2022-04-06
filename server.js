@@ -61,12 +61,14 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 
     //clear database referencesof a match, then remove it from memory
     const deleteMatch = async (data) => {
-        Object.keys(matches[data].players).forEach(async (playerID, i) => {
-            await pubClient.DEL('matchIdsByWallet:' + playerID);
-        });
+        if (matches[currentMatch]){
+            Object.keys(matches[data].players).forEach(async (playerID, i) => {
+                await pubClient.DEL('matchIdsByWallet:' + playerID);
+            });
+        }
         await pubClient.LREM('liveMatches', 0, data);
         await pubClient.DEL('match:' + data + ':port');
-        delete matches[data];
+        if (matches[currentMatch]) delete matches[data];
         console.log(`Lobby ${data} has been terminated`)
     }
 
@@ -158,13 +160,16 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 
         socket.on('leaveGame', async(data, cb) => {
             const currentMatch = await pubClient.get('matchIdsByWallet:' + socket.userData.wallet);
-            delete matches[currentMatch].players[socket.userData.wallet];
+            if (matches[currentMatch]) delete matches[currentMatch].players[socket.userData.wallet];
             await pubClient.DEL('matchIdsByWallet:' + socket.userData.wallet);
             socket.broadcast.emit('deletePlayer', { id: socket.userData.wallet });
             socket.leave(data);
 
             //Stop & delete match instance if all players have deliberately left
-            if (Object.keys(matches[currentMatch].players).length < 1) await deleteMatch(data);
+            if (matches[currentMatch]) {
+                if (Object.keys(matches[currentMatch].players).length < 1);
+            }
+            await deleteMatch(data);
             if (typeof cb === 'function') cb();
         })
         //Initializes server framework for storing a player state
