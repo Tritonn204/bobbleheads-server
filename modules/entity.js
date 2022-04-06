@@ -124,6 +124,8 @@ class Entity {
                     this.vel.x = this.getImpactVelocity()*newVel.x;
                     this.vel.y = this.getImpactVelocity()*newVel.y;
 
+                    console.log(this.vel);
+
                     if (newVel.y < 0) this.isGrounded = false;
                     break;
 
