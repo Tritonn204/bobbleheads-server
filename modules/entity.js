@@ -125,7 +125,6 @@ class Entity {
                     this.vel.x = this.getImpactVelocity()*newVel.x*1.75;
                     this.vel.y = this.getImpactVelocity()*newVel.y*1.25;
 
-                    console.log(angle,newVel);
                     this.ragdoll = true;
                     if (newVel.y < 0) this.isGrounded = false;
                     break;
