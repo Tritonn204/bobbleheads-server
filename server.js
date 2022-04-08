@@ -281,7 +281,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
                     }
                 }
                 if (Object.keys(pack).length > 0){
-                    io.sockets.adapter.rooms[room].forEach(socket => {
+                    io.nsps['/'].adapter.rooms[room].forEach(socket => {
                         socket.volatile.emit('remoteData', pack);
                     })
                 }
