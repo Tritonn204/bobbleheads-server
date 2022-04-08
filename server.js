@@ -121,6 +121,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
             matches[gameId] = {};
             matches[gameId].level = new Level();
             matches[gameId].players = {};
+            matches[gameId].clock = 0;
 
             await pubClient.LPUSH('liveMatches', gameId);
             await pubClient.set('matchIdsByWallet:' + socket.userData.wallet, gameId);
@@ -266,7 +267,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
                 for (const ID of playerIDs) {
                     if (matches[room].players[ID]){
                         pack[ID] = {
-                            timestamp: time,
+                            timestamp: matches[room].clock,
                             hp: matches[room].players[ID].hp,
                             skeleton: matches[room].players[ID].skeleton,
                             pos: {x: matches[room].players[ID].pos.x, y: matches[room].players[ID].pos.y},
@@ -308,6 +309,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 
                 if (accumulatedTime[room] > delta) {
                     for (let i = accumulatedTime[room]; i >= delta; i -= delta) {
+                        matches[room].clock += delta;
                         matches[room].level.update(delta/1000);
                         accumulatedTime[room] -= delta;
                     }
