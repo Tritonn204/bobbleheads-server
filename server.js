@@ -281,7 +281,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
                     }
                 }
                 if (Object.keys(pack).length > 0 && io.sockets.adapter.rooms[room]){
-                    io.sockets.adapter.rooms[room].forEach(socket => {
+                    await io.in(room).fetchSockets().forEach(socket => {
                         socket.volatile.emit('remoteData', pack);
                     })
                 }
