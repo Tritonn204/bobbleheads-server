@@ -167,9 +167,8 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
 
             //Stop & delete match instance if all players have deliberately left
             if (matches[currentMatch]) {
-                if (Object.keys(matches[currentMatch].players).length < 1);
+                if (Object.keys(matches[currentMatch].players).length < 1) await deleteMatch(data);
             }
-            await deleteMatch(data);
             if (typeof cb === 'function') cb();
         })
         //Initializes server framework for storing a player state
