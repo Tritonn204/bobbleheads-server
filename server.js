@@ -280,7 +280,11 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
                         }
                     }
                 }
-                if (Object.keys(pack).length > 0) io.to(room).emit('remoteData', pack);
+                if (Object.keys(pack).length > 0){
+                    io.sockets.clients(room).forEach(socket => {
+                        socket.volatile.emit('remoteData', pack);
+                    })
+                }
                 //Data for future replays
                 // pubClient.HSET('matchSnapshots', room, time, JSON.stringify(pack), () => {});
 
