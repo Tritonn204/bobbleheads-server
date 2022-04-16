@@ -216,6 +216,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
             } else {
                 console.log(`Client ${socket.id} lost connection, ${reason}`);
             }
+            delete socket.userData;
         });
 
         socket.on("chat message", msg => {
