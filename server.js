@@ -103,6 +103,7 @@ Promise.all([pubClient.connect(), subClient.connect()]).then(() => {
                 pos: data ? data.pos : new Vec2(640,0),
                 vel: data ? data.vel : new Vec2(0,0),
                 facing: data ? data.facing : 1,
+                skeleton: data.skeleton
             });
         })
 
