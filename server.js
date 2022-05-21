@@ -29,7 +29,7 @@ const matchIdsByWallet = {};
 const liveMatches = [];
 
 const firstOrigin = process.env.DEVMODE ? 'localhost:3000' : '';
-const origins = [firstOrigin, 'https://youthful-keller-2f50ca.netlify.app'];
+const origins = [firstOrigin, 'https://bobbleheadsnftgame.netlify.app, https://game.bobbleheadsnft.art'];
 
 const processPorts = {};
 
