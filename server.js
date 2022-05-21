@@ -48,7 +48,8 @@ let accumulatedTime = {};
 const io = new socketIo.Server(server, {
     cors: {
         origin: [
-            "https://youthful-keller-2f50ca.netlify.app",
+            "https://bobbleheadsnftgame.netlify.app",
+            "https://game.bobbleheadsnft.art",
             "http://localhost:3000"
         ],
         methods: ["GET", "POST"],
